@@ -1,0 +1,119 @@
+@startuml Arcraft_ERD_Profesional
+
+!theme plain
+skinparam Linetype ortho
+hide circle
+
+' Estilos de los paquetes
+skinparam Package {
+    BackgroundColor #F9F9F9
+    BorderColor #DDDDDD
+}
+
+package "Usuarios y Clanes" #E1F5FE {
+    class "jugadores" as J << (T,#0288D1) >> #White {
+        + **uuid** : UUID [PK] | ID único del jugador
+        --
+        nombre : VARCHAR(16) | Nick ingame (Único)
+        skin_url : TEXT | URL de la skin
+        clan_id : UUID [FK] | Clan actual
+        online : BOOLEAN | Estado de conexión
+        ultima_conexion : TIMESTAMPTZ | Registro logout
+    }
+
+    class "clanes" as C << (T,#0288D1) >> #White {
+        + **id** : UUID [PK] | ID del clan
+        --
+        nombre : VARCHAR(32) | Nombre único
+        tag : VARCHAR(8) | Siglas [ABC]
+        owner_uuid : UUID [FK] | Líder/Creador
+    }
+
+    class "miembros_clan" as MC << (T,#0288D1) >> #White {
+        + **uuid** : UUID [FK] | Jugador vinculado
+        + **clan_id** : UUID [FK] | Clan vinculado
+        --
+        fecha_ingreso : TIMESTAMPTZ | Inicio membresía
+        rol : VARCHAR(20) | Líder, Admin, Miembro
+    }
+}
+
+package "Eventos de Mundo" #E8F5E9 {
+    class "eventos_bloques" as EB << (T,#2E7D32) >> #White {
+        + **id** : BIGSERIAL [PK] | ID único evento
+        --
+        jugador_uuid : UUID [FK] | Autor acción
+        tipo_accion : ENUM | 'place' o 'break'
+        bloque_tipo : VARCHAR(50) | Ej: 'stone'
+        world : VARCHAR(64) | Dimensión
+        timestamp : TIMESTAMPTZ | Momento exacto
+    }
+
+    class "eventos_mob_kills" as EM << (T,#2E7D32) >> #White {
+        + **id** : BIGSERIAL [PK] | ID de muerte
+        --
+        jugador_uuid : UUID [FK] | Asesino
+        mob_tipo : VARCHAR(50) | Ej: 'creeper'
+        timestamp : TIMESTAMPTZ | Fecha y hora
+    }
+}
+
+package "Combate" #FFEBEE {
+    class "muertes_jugador" as MJ << (T,#C62828) >> #White {
+        + **id** : BIGSERIAL [PK] | Log de muerte
+        --
+        victima_uuid : UUID [FK] | Quién murió
+        asesino_uuid : UUID [FK] | Quién mató
+        causa : VARCHAR(50) | Ej: 'lava'
+        timestamp : TIMESTAMPTZ | Momento
+    }
+
+    class "eventos_arco" as EA << (T,#C62828) >> #White {
+        + **id** : BIGSERIAL [PK] | Log disparo
+        --
+        jugador_uuid : UUID [FK] | Tirador
+        acertado : BOOLEAN | ¿Impactó?
+        distancia : FLOAT | Metros de distancia
+    }
+}
+
+package "Estadísticas y Logros" #FFF8E1 {
+    class "estadisticas_totales" as ET << (T,#F9A825) >> #White {
+        + **jugador_uuid** : UUID [PK] | Vínculo jugador
+        --
+        kills_pvp : INTEGER | Asesinatos totales
+        deaths : INTEGER | Muertes totales
+        bloques_minados : INTEGER | Total picado
+        updated_at : TIMESTAMPTZ | Última sincronización
+    }
+
+    class "titulos_obtenidos" as TO << (T,#F9A825) >> #White {
+        + **jugador_uuid** : UUID [FK] | Poseedor
+        + **titulo_id** : INTEGER [FK] | ID título
+        --
+        vigente : BOOLEAN | ¿Es el récord actual?
+    }
+
+    class "log_eventos" as LE << (T,#F9A825) >> #White {
+        + **id** : BIGSERIAL [PK] | ID evento
+        --
+        tipo : VARCHAR(30) | 'logro', 'boss'
+        jugador_uuid : UUID [FK] | Autor
+        descripcion : TEXT | Texto formateado
+        timestamp : TIMESTAMPTZ | Fecha
+    }
+}
+
+' Relaciones (Sintaxis simplificada para evitar errores de renderizado)
+J -- C
+C -- MC
+J -- MC
+J -- EB
+J -- EM
+J -- MJ
+J -- EA
+J -- ET
+J -- TO
+J -- LE
+
+@enduml
