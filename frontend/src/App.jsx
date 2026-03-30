@@ -114,7 +114,7 @@ export default function App() {
                 }}>
 
                     {/* Stat 1: Jugadores Online */}
-                    <div className="stat-card bg-[#1e1e1e] p-6 rounded-2xl shadow-lg border border-gray-800/40" style={{ gridArea: 'stat1' }}>
+                    <div className="stat-card bg-[#696969] p-6 rounded-2xl shadow-lg border border-gray-800/40" style={{ gridArea: 'stat1' }}>
                         <div className="flex items-center justify-between mb-3">
                             <h3 className="text-gray-400 text-xs font-semibold uppercase tracking-widest">Jugadores Online</h3>
                             <div className="w-2 h-2 rounded-full bg-green-400 badge-online" />
@@ -130,21 +130,21 @@ export default function App() {
                     </div>
 
                     {/* Stat 2: Tiempo de Actividad */}
-                    <div className="stat-card bg-[#1e1e1e] p-6 rounded-2xl shadow-lg border border-gray-800/40" style={{ gridArea: 'stat2' }}>
+                    <div className="stat-card bg-[#696969] p-6 rounded-2xl shadow-lg border border-gray-800/40" style={{ gridArea: 'stat2' }}>
                         <h3 className="text-gray-400 text-xs font-semibold uppercase tracking-widest mb-3">Tiempo de Actividad</h3>
                         <span className="text-5xl font-extrabold text-blue-400">99.8%</span>
                         <p className="text-xs text-gray-600 mt-4">Uptime en los últimos 30 días</p>
                     </div>
 
                     {/* Stat 3: TPS */}
-                    <div className="stat-card bg-[#1e1e1e] p-6 rounded-2xl shadow-lg border border-gray-800/40" style={{ gridArea: 'stat3' }}>
+                    <div className="stat-card bg-[#696969] p-6 rounded-2xl shadow-lg border border-gray-800/40" style={{ gridArea: 'stat3' }}>
                         <h3 className="text-gray-400 text-xs font-semibold uppercase tracking-widest mb-3">TPS Promedio</h3>
                         <span className="text-5xl font-extrabold text-orange-400">19.8</span>
                         <p className="text-xs text-gray-600 mt-4">Máximo: 20 TPS</p>
                     </div>
 
                     {/* Top Jugadores — columna angosta */}
-                    <div className="bg-[#1e1e1e] p-6 rounded-2xl shadow-lg border border-gray-800/40 flex flex-col" style={{ gridArea: 'players' }}>
+                    <div className="bg-[#696969] p-6 rounded-2xl shadow-lg border border-gray-800/40 flex flex-col" style={{ gridArea: 'players' }}>
                         <h3 className="text-sm font-bold text-white mb-5 flex items-center gap-2">
                             <span className="w-6 h-6 rounded-lg bg-red-500/20 flex items-center justify-center">
                                 <Skull size={13} className="text-red-400" />
@@ -181,7 +181,7 @@ export default function App() {
                     </div>
 
                     {/* Eventos Recientes — columna ancha (span 2) */}
-                    <div className="bg-[#1e1e1e] p-6 rounded-2xl shadow-lg border border-gray-800/40 flex flex-col" style={{ gridArea: 'events' }}>
+                    <div className="bg-[#696969] p-6 rounded-2xl shadow-lg border border-gray-800/40 flex flex-col" style={{ gridArea: 'events' }}>
                         <h3 className="text-sm font-bold text-white mb-5 flex items-center gap-2">
                             <span className="w-6 h-6 rounded-lg bg-blue-500/20 flex items-center justify-center">
                                 <span className="text-blue-400 text-xs font-black">!</span>
@@ -209,7 +209,7 @@ export default function App() {
                     </div>
 
                     {/* Top Items — span 2 */}
-                    <div className="bg-[#1e1e1e] p-6 rounded-2xl shadow-lg border border-gray-800/40" style={{ gridArea: 'items' }}>
+                    <div className="bg-[#696969] p-6 rounded-2xl shadow-lg border border-gray-800/40" style={{ gridArea: 'items' }}>
                         <h3 className="text-sm font-bold text-white mb-5 flex items-center gap-2">
                             <span className="w-6 h-6 rounded-lg bg-orange-500/20 flex items-center justify-center text-orange-400 text-xs font-bold">⚔</span>
                             Top Items
@@ -231,7 +231,7 @@ export default function App() {
                     </div>
 
                     {/* Top Bloques — columna angosta */}
-                    <div className="bg-[#1e1e1e] p-6 rounded-2xl shadow-lg border border-gray-800/40" style={{ gridArea: 'blocks' }}>
+                    <div className="bg-[#696969] p-6 rounded-2xl shadow-lg border border-gray-800/40" style={{ gridArea: 'blocks' }}>
                         <h3 className="text-sm font-bold text-white mb-5 flex items-center gap-2">
                             <span className="w-6 h-6 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400 text-xs font-bold">▦</span>
                             Top Bloques
