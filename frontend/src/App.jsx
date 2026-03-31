@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Skull, UserPlus, LogOut, Hammer } from 'lucide-react';
+import LoginPage from './views/LoginPage.jsx';
 
 const topPlayers = [
     { id: 1, name: 'Player1', kills: 1250, online: true },
@@ -59,6 +60,11 @@ function EventIcon({ type }) {
 
 export default function App() {
     const [activeNav, setActiveNav] = useState('Inicio');
+    const [user, setUser] = useState(null);
+
+    if (!user) {
+        return <LoginPage onLogin={setUser} />;
+    }
 
     return (
         <div className="min-h-screen bg-[#121212] text-gray-200" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -80,14 +86,26 @@ export default function App() {
                         </button>
                     ))}
                 </div>
-                <div className="flex items-center space-x-3">
-                    <div className="relative">
-                        <div className="w-9 h-9 bg-gradient-to-br from-gray-500 to-gray-700 rounded-full flex items-center justify-center text-xs font-bold text-white">
-                            NJ
+                <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2.5">
+                        <div className="relative">
+                            <div className="w-9 h-9 bg-gradient-to-br from-gray-500 to-gray-700 rounded-full flex items-center justify-center text-xs font-bold text-white uppercase">
+                                {user.username.slice(0, 2)}
+                            </div>
+                            <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-[#1a1a1a] badge-online" />
                         </div>
-                        <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-[#1a1a1a] badge-online" />
+                        <div>
+                            <p className="text-sm font-medium text-gray-200 leading-none">{user.username}</p>
+                            <p className="text-xs text-gray-500 mt-0.5 capitalize">{user.role === 'ADMIN' ? 'Administrador' : 'Miembro'}</p>
+                        </div>
                     </div>
-                    <span className="text-sm font-medium text-gray-300">NombreJugador</span>
+                    <button
+                        onClick={() => setUser(null)}
+                        className="text-gray-600 hover:text-gray-300 transition-colors ml-1 text-xs"
+                        title="Cerrar sesión"
+                    >
+                        <LogOut size={15} />
+                    </button>
                 </div>
             </nav>
 
