@@ -9,216 +9,220 @@ const topPlayers = [
 ];
 
 const recentEvents = [
-    { id: 1, type: 'kill', text: 'Player1 eliminó a Player4', time: 'hace 2m', tooltip: 'Evento: Kill' },
-    { id: 2, type: 'join', text: 'Player5 se unió al servidor', time: 'hace 5m', tooltip: 'Evento: Conexión' },
-    { id: 3, type: 'leave', text: 'Player2 salió del servidor', time: 'hace 10m', tooltip: 'Evento: Desconexión' },
-    { id: 4, type: 'build', text: 'Player6 construyó un Castillo', time: 'hace 15m', tooltip: 'Evento: Construcción' },
-    { id: 5, type: 'kill', text: 'Player3 eliminó a Player7', time: 'hace 18m', tooltip: 'Evento: Kill' },
-    { id: 6, type: 'join', text: 'Player8 se unió al servidor', time: 'hace 22m', tooltip: 'Evento: Conexión' },
+    { id: 1, type: 'kill',  text: 'Player1 eliminó a Player4',    time: 'hace 2m'  },
+    { id: 2, type: 'join',  text: 'Player5 se unió al servidor',   time: 'hace 5m'  },
+    { id: 3, type: 'leave', text: 'Player2 salió del servidor',    time: 'hace 10m' },
+    { id: 4, type: 'build', text: 'Player6 construyó un Castillo', time: 'hace 15m' },
+    { id: 5, type: 'kill',  text: 'Player3 eliminó a Player7',     time: 'hace 18m' },
+    { id: 6, type: 'join',  text: 'Player8 se unió al servidor',   time: 'hace 22m' },
 ];
 
 const topItems = [
-    { id: 1, name: 'Espada de Diamante', value: '5000 usos' },
-    { id: 2, name: 'Pico de Netherita', value: '4500 usos' },
-    { id: 3, name: 'Arco Encantado', value: '3000 usos' },
+    { id: 1, name: 'Espada de Diamante', value: '5 000 usos' },
+    { id: 2, name: 'Pico de Netherita',  value: '4 500 usos' },
+    { id: 3, name: 'Arco Encantado',     value: '3 000 usos' },
 ];
 
 const topBlocks = [
-    { id: 1, name: 'Piedra', value: '10M colocados' },
-    { id: 2, name: 'Tierra', value: '8M colocados' },
-    { id: 3, name: 'Madera de Roble', value: '6M colocados' },
+    { id: 1, name: 'Piedra',         value: '10M' },
+    { id: 2, name: 'Tierra',         value: '8M'  },
+    { id: 3, name: 'Madera de Roble',value: '6M'  },
 ];
 
 const navLinks = ['Inicio', 'Mapas', 'Jugadores', 'Clanes', 'Estadísticas', 'Rankings', 'Historial'];
 
+// ── Componentes pequeños ────────────────────────────────────────────
+
 function PlaceholderIcon() {
     return (
-        <div className="w-10 h-10 border border-gray-700 rounded-lg flex items-center justify-center relative overflow-hidden bg-[#2a2a2a] flex-shrink-0">
-            <div className="absolute w-[140%] h-px bg-gray-600 rotate-45" />
-            <div className="absolute w-[140%] h-px bg-gray-600 -rotate-45" />
+        <div style={{ background: 'var(--card-hover)', border: '1px solid var(--border)' }}
+             className="w-9 h-9 rounded-lg flex items-center justify-center relative overflow-hidden flex-shrink-0">
+            <div className="absolute w-[140%] h-px rotate-45"    style={{ background: 'var(--border)' }} />
+            <div className="absolute w-[140%] h-px -rotate-45"   style={{ background: 'var(--border)' }} />
         </div>
     );
 }
 
 function EventIcon({ type }) {
-    const icons = {
-        kill: { icon: <Skull size={16} />, color: 'text-red-500 bg-red-500/10', label: 'Kill' },
-        join: { icon: <UserPlus size={16} />, color: 'text-green-400 bg-green-400/10', label: 'Join' },
-        leave: { icon: <LogOut size={16} />, color: 'text-yellow-400 bg-yellow-400/10', label: 'Leave' },
-        build: { icon: <Hammer size={16} />, color: 'text-blue-400 bg-blue-400/10', label: 'Build' },
+    const map = {
+        kill:  { icon: <Skull    size={14} />, bg: 'rgba(194,84,90,0.12)',  color: 'var(--red)'    },
+        join:  { icon: <UserPlus size={14} />, bg: 'rgba(75,191,133,0.12)', color: 'var(--green)'  },
+        leave: { icon: <LogOut   size={14} />, bg: 'rgba(184,154,62,0.12)', color: 'var(--yellow)' },
+        build: { icon: <Hammer   size={14} />, bg: 'rgba(90,159,212,0.12)', color: 'var(--blue)'   },
     };
-    const { icon, color, label } = icons[type] || icons.build;
+    const { icon, bg, color } = map[type] || map.build;
     return (
-        <div
-            data-tooltip={label}
-            className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${color}`}
-        >
+        <div data-tooltip={type} className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+             style={{ background: bg, color }}>
             {icon}
         </div>
     );
 }
 
+// ── App ─────────────────────────────────────────────────────────────
+
 export default function App() {
     const [activeNav, setActiveNav] = useState('Inicio');
     const [user, setUser] = useState(null);
 
-    if (!user) {
-        return <LoginPage onLogin={setUser} />;
-    }
+    if (!user) return <LoginPage onLogin={setUser} />;
 
     return (
-        <div className="min-h-screen bg-[#121212] text-gray-200" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <div className="min-h-screen" style={{ background: 'var(--bg)', color: 'var(--text-1)', fontFamily: "'Inter', sans-serif" }}>
 
-            {/* Barra de navegación sticky */}
-            <nav className="sticky top-0 z-50 flex items-center justify-between px-10 py-3 bg-[#1a1a1a] border-b border-gray-800/60 backdrop-blur-sm">
-                <div className="flex items-center gap-1">
+            {/* ── Navbar ─────────────────────────────────────────── */}
+            <nav className="sticky top-0 z-50 flex items-center justify-between px-8 py-3"
+                 style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
+
+                <div className="flex items-center gap-0.5">
                     {navLinks.map(link => (
                         <button
                             key={link}
                             onClick={() => setActiveNav(link)}
-                            className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                                activeNav === link
-                                    ? 'text-white bg-white/10'
-                                    : 'text-gray-400 hover:text-white hover:bg-white/5'
-                            }`}
+                            className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150"
+                            style={{
+                                color:      activeNav === link ? 'var(--text-1)' : 'var(--text-2)',
+                                background: activeNav === link ? 'rgba(255,255,255,0.06)' : 'transparent',
+                            }}
+                            onMouseEnter={e => { if (activeNav !== link) e.currentTarget.style.color = 'var(--text-1)'; }}
+                            onMouseLeave={e => { if (activeNav !== link) e.currentTarget.style.color = 'var(--text-2)'; }}
                         >
                             {link}
                         </button>
                     ))}
                 </div>
+
                 <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2.5">
                         <div className="relative">
-                            <div className="w-9 h-9 bg-gradient-to-br from-gray-500 to-gray-700 rounded-full flex items-center justify-center text-xs font-bold text-white uppercase">
-                                {user.username.slice(0, 2)}
+                            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
+                                 style={{ background: 'var(--border)', color: 'var(--text-2)' }}>
+                                {user.username.slice(0, 2).toUpperCase()}
                             </div>
-                            <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-[#1a1a1a] badge-online" />
+                            <div className="badge-online absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2"
+                                 style={{ background: 'var(--green)', borderColor: 'var(--surface)' }} />
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-gray-200 leading-none">{user.username}</p>
-                            <p className="text-xs text-gray-500 mt-0.5 capitalize">{user.role === 'ADMIN' ? 'Administrador' : 'Miembro'}</p>
+                            <p className="text-sm font-medium leading-none" style={{ color: 'var(--text-1)' }}>{user.username}</p>
+                            <p className="text-xs mt-0.5" style={{ color: 'var(--text-3)' }}>
+                                {user.role === 'ADMIN' ? 'Administrador' : 'Miembro'}
+                            </p>
                         </div>
                     </div>
-                    <button
-                        onClick={() => setUser(null)}
-                        className="text-gray-600 hover:text-gray-300 transition-colors ml-1 text-xs"
-                        title="Cerrar sesión"
-                    >
-                        <LogOut size={15} />
+                    <button onClick={() => setUser(null)} data-tooltip="Cerrar sesión"
+                            className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
+                            style={{ color: 'var(--text-3)' }}
+                            onMouseEnter={e => e.currentTarget.style.color = 'var(--text-2)'}
+                            onMouseLeave={e => e.currentTarget.style.color = 'var(--text-3)'}>
+                        <LogOut size={14} />
                     </button>
                 </div>
             </nav>
 
-            {/* Contenido principal */}
-            <main className="px-10 py-8 max-w-[1280px] mx-auto w-full">
+            {/* ── Main ───────────────────────────────────────────── */}
+            <main className="px-8 py-7 max-w-[1280px] mx-auto w-full">
 
-                {/* Título */}
                 <div className="mb-6">
-                    <h1 className="text-3xl font-bold text-white tracking-tight">Panel de Control del Servidor</h1>
-                    <p className="text-gray-500 text-sm mt-1">Resumen general del estado del servidor</p>
+                    <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-1)' }}>
+                        Panel de Control
+                    </h1>
+                    <p className="text-sm mt-0.5" style={{ color: 'var(--text-3)' }}>Estado general del servidor</p>
                 </div>
 
-                {/* Dashboard Grid */}
+                {/* ── Grid ──────────────────────────────────────── */}
                 <div style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(3, 1fr)',
-                    gridTemplateRows: 'auto auto auto',
-                    gap: '20px',
+                    gap: '16px',
                     gridTemplateAreas: `
-                        "stat1  stat2   stat3"
-                        "players events events"
-                        "items  items   blocks"
+                        "stat1   stat2   stat3"
+                        "players events  events"
+                        "items   items   blocks"
                     `
                 }}>
 
-                    {/* Stat 1: Jugadores Online */}
-                    <div className="stat-card bg-[#696969] p-6 rounded-2xl shadow-lg border border-gray-800/40" style={{ gridArea: 'stat1' }}>
+                    {/* Stat 1 — Jugadores */}
+                    <div className="stat-card p-5 rounded-2xl" style={{ gridArea: 'stat1', background: 'var(--card)', border: '1px solid var(--border)' }}>
                         <div className="flex items-center justify-between mb-3">
-                            <h3 className="text-gray-400 text-xs font-semibold uppercase tracking-widest">Jugadores Online</h3>
-                            <div className="w-2 h-2 rounded-full bg-green-400 badge-online" />
+                            <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--text-3)' }}>Jugadores Online</span>
+                            <div className="badge-online w-2 h-2 rounded-full" style={{ background: 'var(--green)' }} />
                         </div>
-                        <div className="flex items-baseline space-x-2">
-                            <span className="text-5xl font-extrabold text-green-400">128</span>
-                            <span className="text-xl font-medium text-gray-600">/ 250</span>
+                        <div className="flex items-baseline gap-2">
+                            <span className="text-4xl font-bold" style={{ color: 'var(--green)' }}>128</span>
+                            <span className="text-lg font-medium" style={{ color: 'var(--text-3)' }}>/ 250</span>
                         </div>
-                        <div className="mt-4 h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                            <div className="h-full bg-green-400/70 rounded-full" style={{ width: '51.2%' }} />
+                        <div className="mt-3 h-1 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
+                            <div className="h-full rounded-full" style={{ width: '51.2%', background: 'var(--green)', opacity: 0.6 }} />
                         </div>
-                        <p className="text-xs text-gray-600 mt-1.5">51% de capacidad</p>
+                        <p className="text-xs mt-1.5" style={{ color: 'var(--text-3)' }}>51% de capacidad</p>
                     </div>
 
-                    {/* Stat 2: Tiempo de Actividad */}
-                    <div className="stat-card bg-[#696969] p-6 rounded-2xl shadow-lg border border-gray-800/40" style={{ gridArea: 'stat2' }}>
-                        <h3 className="text-gray-400 text-xs font-semibold uppercase tracking-widest mb-3">Tiempo de Actividad</h3>
-                        <span className="text-5xl font-extrabold text-blue-400">99.8%</span>
-                        <p className="text-xs text-gray-600 mt-4">Uptime en los últimos 30 días</p>
+                    {/* Stat 2 — Uptime */}
+                    <div className="stat-card p-5 rounded-2xl" style={{ gridArea: 'stat2', background: 'var(--card)', border: '1px solid var(--border)' }}>
+                        <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--text-3)' }}>Tiempo de Actividad</span>
+                        <div className="mt-3">
+                            <span className="text-4xl font-bold" style={{ color: 'var(--blue)' }}>99.8%</span>
+                        </div>
+                        <p className="text-xs mt-3" style={{ color: 'var(--text-3)' }}>Últimos 30 días</p>
                     </div>
 
-                    {/* Stat 3: TPS */}
-                    <div className="stat-card bg-[#696969] p-6 rounded-2xl shadow-lg border border-gray-800/40" style={{ gridArea: 'stat3' }}>
-                        <h3 className="text-gray-400 text-xs font-semibold uppercase tracking-widest mb-3">TPS Promedio</h3>
-                        <span className="text-5xl font-extrabold text-orange-400">19.8</span>
-                        <p className="text-xs text-gray-600 mt-4">Máximo: 20 TPS</p>
+                    {/* Stat 3 — TPS */}
+                    <div className="stat-card p-5 rounded-2xl" style={{ gridArea: 'stat3', background: 'var(--card)', border: '1px solid var(--border)' }}>
+                        <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--text-3)' }}>TPS Promedio</span>
+                        <div className="mt-3">
+                            <span className="text-4xl font-bold" style={{ color: 'var(--orange)' }}>19.8</span>
+                        </div>
+                        <p className="text-xs mt-3" style={{ color: 'var(--text-3)' }}>Máximo: 20 TPS</p>
                     </div>
 
-                    {/* Top Jugadores — columna angosta */}
-                    <div className="bg-[#696969] p-6 rounded-2xl shadow-lg border border-gray-800/40 flex flex-col" style={{ gridArea: 'players' }}>
-                        <h3 className="text-sm font-bold text-white mb-5 flex items-center gap-2">
-                            <span className="w-6 h-6 rounded-lg bg-red-500/20 flex items-center justify-center">
-                                <Skull size={13} className="text-red-400" />
-                            </span>
-                            Top Jugadores
-                        </h3>
+                    {/* Top Jugadores */}
+                    <div className="p-5 rounded-2xl flex flex-col" style={{ gridArea: 'players', background: 'var(--card)', border: '1px solid var(--border)' }}>
+                        <div className="flex items-center gap-2 mb-4">
+                            <div className="w-5 h-5 rounded-md flex items-center justify-center" style={{ background: 'rgba(194,84,90,0.15)' }}>
+                                <Skull size={12} style={{ color: 'var(--red)' }} />
+                            </div>
+                            <span className="text-sm font-semibold" style={{ color: 'var(--text-1)' }}>Top Jugadores</span>
+                        </div>
                         <div className="flex-1">
-                            {topPlayers.map((player, index) => (
-                                <div
-                                    key={player.id}
-                                    className={`list-row flex items-center justify-between py-3.5 ${
-                                        index !== topPlayers.length - 1 ? 'border-b border-gray-800/60' : ''
-                                    }`}
-                                >
+                            {topPlayers.map((player, i) => (
+                                <div key={player.id}
+                                     className={`list-row flex items-center justify-between py-3 ${i < topPlayers.length - 1 ? 'border-b' : ''}`}
+                                     style={{ borderColor: 'var(--border-sub)' }}>
                                     <div className="flex items-center gap-3">
-                                        <span className="text-xs font-bold text-gray-700 w-5 text-center">#{index + 1}</span>
+                                        <span className="text-xs font-bold w-4 text-center" style={{ color: 'var(--text-3)' }}>#{i + 1}</span>
                                         <div className="relative">
-                                            <div className="w-9 h-9 bg-gradient-to-br from-gray-600 to-gray-700 rounded-full" />
-                                            <div
-                                                data-tooltip={player.online ? 'Online' : 'Offline'}
-                                                className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[#1e1e1e] ${
-                                                    player.online ? 'bg-green-400 badge-online' : 'bg-red-500'
-                                                }`}
-                                            />
+                                            <div className="w-8 h-8 rounded-full" style={{ background: 'var(--border)' }} />
+                                            <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 ${player.online ? 'badge-online' : ''}`}
+                                                 data-tooltip={player.online ? 'Online' : 'Offline'}
+                                                 style={{ background: player.online ? 'var(--green)' : 'var(--red)', borderColor: 'var(--card)' }} />
                                         </div>
-                                        <span className="text-gray-200 font-medium text-sm">{player.name}</span>
+                                        <span className="text-sm font-medium" style={{ color: 'var(--text-1)' }}>{player.name}</span>
                                     </div>
-                                    <span className="text-red-400 font-bold text-sm tabular-nums">
-                                        {player.kills.toLocaleString()} <span className="text-gray-600 font-normal">kills</span>
+                                    <span className="text-sm font-semibold tabular-nums" style={{ color: 'var(--red)' }}>
+                                        {player.kills.toLocaleString()} <span style={{ color: 'var(--text-3)', fontWeight: 400 }}>kills</span>
                                     </span>
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    {/* Eventos Recientes — columna ancha (span 2) */}
-                    <div className="bg-[#696969] p-6 rounded-2xl shadow-lg border border-gray-800/40 flex flex-col" style={{ gridArea: 'events' }}>
-                        <h3 className="text-sm font-bold text-white mb-5 flex items-center gap-2">
-                            <span className="w-6 h-6 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                                <span className="text-blue-400 text-xs font-black">!</span>
-                            </span>
-                            Eventos Recientes
-                        </h3>
+                    {/* Eventos Recientes */}
+                    <div className="p-5 rounded-2xl flex flex-col" style={{ gridArea: 'events', background: 'var(--card)', border: '1px solid var(--border)' }}>
+                        <div className="flex items-center gap-2 mb-4">
+                            <div className="w-5 h-5 rounded-md flex items-center justify-center text-xs font-black"
+                                 style={{ background: 'rgba(90,159,212,0.15)', color: 'var(--blue)' }}>!</div>
+                            <span className="text-sm font-semibold" style={{ color: 'var(--text-1)' }}>Eventos Recientes</span>
+                        </div>
                         <div className="events-scroll flex-1 pr-1">
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0' }}>
-                                {recentEvents.map((event, index) => (
-                                    <div
-                                        key={event.id}
-                                        className={`list-row flex items-center gap-3 py-3 mx-1 ${
-                                            index < recentEvents.length - 2 ? 'border-b border-gray-800/60' : ''
-                                        }`}
-                                    >
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
+                                {recentEvents.map((event, i) => (
+                                    <div key={event.id}
+                                         className={`list-row flex items-center gap-2.5 py-2.5 mx-1 ${i < recentEvents.length - 2 ? 'border-b' : ''}`}
+                                         style={{ borderColor: 'var(--border-sub)' }}>
                                         <EventIcon type={event.type} />
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-gray-300 text-sm truncate">{event.text}</p>
-                                            <p className="text-xs text-gray-600 mt-0.5 tabular-nums">{event.time}</p>
+                                        <div className="min-w-0">
+                                            <p className="text-sm truncate" style={{ color: 'var(--text-1)' }}>{event.text}</p>
+                                            <p className="text-xs mt-0.5 tabular-nums" style={{ color: 'var(--text-3)' }}>{event.time}</p>
                                         </div>
                                     </div>
                                 ))}
@@ -226,54 +230,53 @@ export default function App() {
                         </div>
                     </div>
 
-                    {/* Top Items — span 2 */}
-                    <div className="bg-[#696969] p-6 rounded-2xl shadow-lg border border-gray-800/40" style={{ gridArea: 'items' }}>
-                        <h3 className="text-sm font-bold text-white mb-5 flex items-center gap-2">
-                            <span className="w-6 h-6 rounded-lg bg-orange-500/20 flex items-center justify-center text-orange-400 text-xs font-bold">⚔</span>
-                            Top Items
-                        </h3>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
-                            {topItems.map((item) => (
-                                <div
-                                    key={item.id}
-                                    className="list-row flex items-center gap-3 p-3 rounded-xl bg-[#252525]"
-                                >
+                    {/* Top Items */}
+                    <div className="p-5 rounded-2xl" style={{ gridArea: 'items', background: 'var(--card)', border: '1px solid var(--border)' }}>
+                        <div className="flex items-center gap-2 mb-4">
+                            <div className="w-5 h-5 rounded-md flex items-center justify-center text-xs"
+                                 style={{ background: 'rgba(201,125,62,0.15)', color: 'var(--orange)' }}>⚔</div>
+                            <span className="text-sm font-semibold" style={{ color: 'var(--text-1)' }}>Top Items</span>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '10px' }}>
+                            {topItems.map(item => (
+                                <div key={item.id} className="list-row flex items-center gap-3 p-3 rounded-xl"
+                                     style={{ background: 'var(--card-hover)', border: '1px solid var(--border-sub)' }}>
                                     <PlaceholderIcon />
                                     <div className="min-w-0">
-                                        <p className="text-gray-200 text-sm font-medium truncate">{item.name}</p>
-                                        <p className="text-orange-400 text-xs font-semibold tabular-nums mt-0.5">{item.value}</p>
+                                        <p className="text-sm font-medium truncate" style={{ color: 'var(--text-1)' }}>{item.name}</p>
+                                        <p className="text-xs mt-0.5 tabular-nums" style={{ color: 'var(--orange)' }}>{item.value}</p>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    {/* Top Bloques — columna angosta */}
-                    <div className="bg-[#696969] p-6 rounded-2xl shadow-lg border border-gray-800/40" style={{ gridArea: 'blocks' }}>
-                        <h3 className="text-sm font-bold text-white mb-5 flex items-center gap-2">
-                            <span className="w-6 h-6 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400 text-xs font-bold">▦</span>
-                            Top Bloques
-                        </h3>
+                    {/* Top Bloques */}
+                    <div className="p-5 rounded-2xl" style={{ gridArea: 'blocks', background: 'var(--card)', border: '1px solid var(--border)' }}>
+                        <div className="flex items-center gap-2 mb-4">
+                            <div className="w-5 h-5 rounded-md flex items-center justify-center text-xs"
+                                 style={{ background: 'rgba(90,159,212,0.15)', color: 'var(--blue)' }}>▦</div>
+                            <span className="text-sm font-semibold" style={{ color: 'var(--text-1)' }}>Top Bloques</span>
+                        </div>
                         <div>
-                            {topBlocks.map((block, index) => (
-                                <div
-                                    key={block.id}
-                                    className={`list-row flex items-center justify-between py-3.5 ${
-                                        index !== topBlocks.length - 1 ? 'border-b border-gray-800/60' : ''
-                                    }`}
-                                >
+                            {topBlocks.map((block, i) => (
+                                <div key={block.id}
+                                     className={`list-row flex items-center justify-between py-3 ${i < topBlocks.length - 1 ? 'border-b' : ''}`}
+                                     style={{ borderColor: 'var(--border-sub)' }}>
                                     <div className="flex items-center gap-3">
                                         <PlaceholderIcon />
-                                        <span className="text-gray-200 text-sm">{block.name}</span>
+                                        <span className="text-sm" style={{ color: 'var(--text-1)' }}>{block.name}</span>
                                     </div>
-                                    <span className="text-blue-400 font-semibold text-sm tabular-nums">{block.value}</span>
+                                    <div className="text-right">
+                                        <span className="text-sm font-semibold tabular-nums" style={{ color: 'var(--blue)' }}>{block.value}</span>
+                                        <p className="text-xs" style={{ color: 'var(--text-3)' }}>colocados</p>
+                                    </div>
                                 </div>
                             ))}
                         </div>
                     </div>
 
                 </div>
-
             </main>
         </div>
     );
