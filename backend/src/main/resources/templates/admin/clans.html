@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clans — Admin — ArCraft</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<header th:replace="~{fragments/layout :: navbar('admin')}"></header>
+
+<main class="page-content">
+    <h1 class="page-title">Clan Management</h1>
+
+    <!-- Create Clan Form -->
+    <div class="panel" style="margin-bottom: 32px;">
+        <div class="panel-header">Create New Clan</div>
+        <div class="panel-body" style="padding: 20px;">
+            <form th:action="@{/admin/clans}" method="post" class="admin-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input type="text" id="name" name="name" required placeholder="e.g. Arc Raiders">
+                    </div>
+                    <div class="form-group">
+                        <label for="tag">Tag</label>
+                        <input type="text" id="tag" name="tag" required placeholder="e.g. ARC" maxlength="5">
+                    </div>
+                    <div class="form-group">
+                        <label for="leaderId">Leader</label>
+                        <select id="leaderId" name="leaderId" required>
+                            <option value="">Select leader...</option>
+                            <option th:each="p : ${players}" th:value="${p.id}" th:text="${p.username}"></option>
+                        </select>
+                    </div>
+                    <div class="form-group form-check-group">
+                        <label class="check-label">
+                            <input type="checkbox" name="friendlyFireEnabled" value="true">
+                            Friendly Fire
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn-primary">Create Clan</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Clans Table -->
+    <div class="panel">
+        <div class="panel-header">All Clans</div>
+        <div class="panel-body">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Tag</th>
+                        <th>Leader</th>
+                        <th>Members</th>
+                        <th>Friendly Fire</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="clan : ${clans}">
+                        <td class="text-green" th:text="${clan.name}">Clan Name</td>
+                        <td class="mono" th:text="'[' + ${clan.tag} + ']'">[TAG]</td>
+                        <td th:text="${clan.leader.username}">Leader</td>
+                        <td class="mono" th:text="${memberCounts[clan.id]}">0</td>
+                        <td>
+                            <span th:if="${clan.friendlyFireEnabled}" class="badge badge-orange">On</span>
+                            <span th:unless="${clan.friendlyFireEnabled}" class="text-muted">Off</span>
+                        </td>
+                        <td>
+                            <a th:href="@{/admin/clans/{id}/edit(id=${clan.id})}" class="btn-small">Edit</a>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(clans)}">
+                        <td colspan="6" class="empty-state">No clans created yet.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>

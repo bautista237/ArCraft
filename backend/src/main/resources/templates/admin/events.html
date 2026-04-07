@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events — Admin — ArCraft</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<header th:replace="~{fragments/layout :: navbar('admin')}"></header>
+
+<main class="page-content">
+    <h1 class="page-title">Event Log Management</h1>
+
+    <!-- Log New Event Form -->
+    <div class="panel" style="margin-bottom: 32px;">
+        <div class="panel-header">Log New Event</div>
+        <div class="panel-body" style="padding: 20px;">
+            <form th:action="@{/admin/events}" method="post" class="admin-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="type">Type</label>
+                        <select id="type" name="type" required>
+                            <option th:each="t : ${eventTypes}" th:value="${t}" th:text="${t}"></option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex: 2;">
+                        <label for="description">Description</label>
+                        <input type="text" id="description" name="description" required
+                               placeholder="e.g. Steve killed the Ender Dragon">
+                    </div>
+                    <div class="form-group">
+                        <label for="playerId">Player (optional)</label>
+                        <select id="playerId" name="playerId">
+                            <option value="">— None —</option>
+                            <option th:each="p : ${players}" th:value="${p.id}" th:text="${p.username}"></option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn-primary">Log Event</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Events Table -->
+    <div class="panel">
+        <div class="panel-header">Recent Events (last 20)</div>
+        <div class="panel-body">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Description</th>
+                        <th>Player</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="event : ${events}">
+                        <td><span class="badge" th:classappend="'badge-' + ${event.type.name().toLowerCase()}"
+                                  th:text="${event.type}">TYPE</span></td>
+                        <td th:text="${event.description}">Something happened</td>
+                        <td th:text="${event.player != null ? event.player.username : '—'}" class="text-muted"></td>
+                        <td class="mono text-muted" th:text="${#temporals.format(event.occurredAt, 'yyyy-MM-dd HH:mm')}"></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(events)}">
+                        <td colspan="4" class="empty-state">No events logged yet.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>

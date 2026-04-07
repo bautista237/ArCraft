@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Players — Admin — ArCraft</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<header th:replace="~{fragments/layout :: navbar('admin')}"></header>
+
+<main class="page-content">
+    <h1 class="page-title">Player Management</h1>
+
+    <!-- Create Player Form -->
+    <div class="panel" style="margin-bottom: 32px;">
+        <div class="panel-header">Create New Player</div>
+        <div class="panel-body" style="padding: 20px;">
+            <form th:action="@{/admin/players}" method="post" class="admin-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <div class="form-group form-check-group">
+                        <label class="check-label">
+                            <input type="checkbox" name="isAdmin" value="true">
+                            Admin
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn-primary">Create Player</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Players Table -->
+    <div class="panel">
+        <div class="panel-header">All Players</div>
+        <div class="panel-body">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Admin</th>
+                        <th>Clan</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="player : ${players}">
+                        <td>
+                            <a th:href="@{/players/{u}(u=${player.username})}" class="player-link"
+                               th:text="${player.username}">Steve</a>
+                        </td>
+                        <td>
+                            <span th:if="${player.admin}" class="badge badge-green">Yes</span>
+                            <span th:unless="${player.admin}" class="text-muted">No</span>
+                        </td>
+                        <td th:text="${player.clan != null ? player.clan.name : '—'}" class="text-muted"></td>
+                        <td class="mono text-muted" th:text="${#temporals.format(player.createdAt, 'yyyy-MM-dd')}"></td>
+                        <td>
+                            <a th:href="@{/admin/players/{id}/edit(id=${player.id})}" class="btn-small">Edit</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>
