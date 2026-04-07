@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${player.username + ' — ArCraft'}">Player — ArCraft</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+    <div th:replace="~{fragments/layout :: navbar('players')}"></div>
+
+    <main class="page-content">
+
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <div class="profile-avatar" th:text="${player.username.substring(0, 1).toUpperCase()}">S</div>
+            <div class="profile-info">
+                <h1 th:text="${player.username}">Steve</h1>
+                <div class="meta">
+                    <span th:if="${player.clan != null}" class="text-green" th:text="'[' + ${player.clan.tag} + '] ' + ${player.clan.name}">Clan</span>
+                    <span th:if="${player.clan == null}" class="text-muted">No clan</span>
+                    <span class="text-muted"> · Joined </span>
+                    <span class="text-muted mono" th:text="${player.createdAt.atZone(T(java.time.ZoneId).systemDefault()).toLocalDate().toString()}">2026-01-01</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-row" th:if="${stats != null}">
+            <div class="stat-card">
+                <div class="label">Kills</div>
+                <div class="value green mono" th:text="${stats.kills}">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Deaths</div>
+                <div class="value mono" th:text="${stats.deaths}">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">K/D Ratio</div>
+                <div class="value aqua mono" th:text="${kdRatio}">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Mobs Killed</div>
+                <div class="value orange mono" th:text="${#numbers.formatInteger(stats.mobsKilled, 1, 'COMMA')}">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Blocks Mined</div>
+                <div class="value mono" th:text="${#numbers.formatInteger(stats.blocksMined, 1, 'COMMA')}">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Blocks Placed</div>
+                <div class="value mono" th:text="${#numbers.formatInteger(stats.blocksPlaced, 1, 'COMMA')}">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Items Crafted</div>
+                <div class="value mono" th:text="${#numbers.formatInteger(stats.itemsCrafted, 1, 'COMMA')}">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Total Distance</div>
+                <div class="value mono" th:text="${#numbers.formatInteger(totalDistance, 1, 'COMMA') + ' blocks'}">0 blocks</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Bow Accuracy</div>
+                <div class="value aqua mono" th:text="${bowAccuracy + '%'}">0%</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Damage Dealt</div>
+                <div class="value mono" th:text="${T(java.lang.String).format('%.0f', stats.damageDealt)}">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Damage Received</div>
+                <div class="value mono" th:text="${T(java.lang.String).format('%.0f', stats.damageReceived)}">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Longest Shot</div>
+                <div class="value mono" th:text="${stats.longestShotBlocks + ' blocks'}">0 blocks</div>
+            </div>
+        </div>
+
+        <!-- Distance Breakdown (inline) -->
+        <div class="stats-row" th:if="${stats != null}" style="margin-bottom: 32px;">
+            <div class="stat-card">
+                <div class="label">Walked</div>
+                <div class="value mono" style="font-size:1.2rem;" th:text="${#numbers.formatInteger(stats.distanceWalked, 1, 'COMMA')}">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Swum</div>
+                <div class="value mono" style="font-size:1.2rem;" th:text="${#numbers.formatInteger(stats.distanceSwum, 1, 'COMMA')}">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Flown</div>
+                <div class="value mono" style="font-size:1.2rem;" th:text="${#numbers.formatInteger(stats.distanceFlown, 1, 'COMMA')}">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Sailed</div>
+                <div class="value mono" style="font-size:1.2rem;" th:text="${#numbers.formatInteger(stats.distanceSailed, 1, 'COMMA')}">0</div>
+            </div>
+        </div>
+
+        <!-- Breakdowns Grid -->
+        <div class="profile-grid">
+
+            <!-- Top Blocks Mined -->
+            <div class="panel">
+                <div class="panel-header">Top Blocks Mined</div>
+                <div class="panel-body">
+                    <ul class="breakdown-list">
+                        <li class="breakdown-item" th:each="b : ${topBlocksMined}">
+                            <span class="breakdown-name" th:text="${b.blockType.replace('minecraft:', '')}">diamond_ore</span>
+                            <span class="breakdown-value" th:text="${#numbers.formatInteger(b.mined, 1, 'COMMA')}">0</span>
+                        </li>
+                    </ul>
+                    <div class="empty-state" th:if="${#lists.isEmpty(topBlocksMined)}">No data.</div>
+                </div>
+            </div>
+
+            <!-- Top Blocks Placed -->
+            <div class="panel">
+                <div class="panel-header">Top Blocks Placed</div>
+                <div class="panel-body">
+                    <ul class="breakdown-list">
+                        <li class="breakdown-item" th:each="b : ${topBlocksPlaced}">
+                            <span class="breakdown-name" th:text="${b.blockType.replace('minecraft:', '')}">stone</span>
+                            <span class="breakdown-value" th:text="${#numbers.formatInteger(b.placed, 1, 'COMMA')}">0</span>
+                        </li>
+                    </ul>
+                    <div class="empty-state" th:if="${#lists.isEmpty(topBlocksPlaced)}">No data.</div>
+                </div>
+            </div>
+
+            <!-- Top Items Crafted -->
+            <div class="panel">
+                <div class="panel-header">Top Items Crafted</div>
+                <div class="panel-body">
+                    <ul class="breakdown-list">
+                        <li class="breakdown-item" th:each="i : ${topItemsCrafted}">
+                            <span class="breakdown-name" th:text="${i.itemType.replace('minecraft:', '')}">torch</span>
+                            <span class="breakdown-value" th:text="${#numbers.formatInteger(i.count, 1, 'COMMA')}">0</span>
+                        </li>
+                    </ul>
+                    <div class="empty-state" th:if="${#lists.isEmpty(topItemsCrafted)}">No data.</div>
+                </div>
+            </div>
+
+            <!-- Top Mobs Killed -->
+            <div class="panel">
+                <div class="panel-header">Top Mobs Killed</div>
+                <div class="panel-body">
+                    <ul class="breakdown-list">
+                        <li class="breakdown-item" th:each="m : ${topMobsKilled}">
+                            <span class="breakdown-name" th:text="${m.mobType.replace('minecraft:', '')}">zombie</span>
+                            <span class="breakdown-value" th:text="${#numbers.formatInteger(m.count, 1, 'COMMA')}">0</span>
+                        </li>
+                    </ul>
+                    <div class="empty-state" th:if="${#lists.isEmpty(topMobsKilled)}">No data.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PvP History -->
+        <div class="panel" style="margin-top: 24px;">
+            <div class="panel-header">PvP History</div>
+            <div class="panel-body">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Result</th>
+                            <th>Opponent</th>
+                            <th class="text-right">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="pvp : ${pvpHistory}">
+                            <td>
+                                <span th:if="${pvp.killer.id == player.id}" class="text-green">Kill</span>
+                                <span th:if="${pvp.victim.id == player.id}" class="text-red">Death</span>
+                            </td>
+                            <td>
+                                <a class="player-link"
+                                   th:if="${pvp.killer.id == player.id}"
+                                   th:href="@{/players/{u}(u=${pvp.victim.username})}"
+                                   th:text="${pvp.victim.username}">opponent</a>
+                                <a class="player-link"
+                                   th:if="${pvp.victim.id == player.id}"
+                                   th:href="@{/players/{u}(u=${pvp.killer.username})}"
+                                   th:text="${pvp.killer.username}">opponent</a>
+                            </td>
+                            <td class="num text-right" th:text="${pvp.endedAt.atZone(T(java.time.ZoneId).systemDefault()).toLocalDateTime().toString().replace('T', ' ').substring(0, 16)}">2026-01-01 12:00</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="empty-state" th:if="${#lists.isEmpty(pvpHistory)}">No PvP history.</div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
