@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'Edit ' + ${player.username} + ' — Admin — ArCraft'">Edit Player</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<header th:replace="~{fragments/layout :: navbar('admin')}"></header>
+
+<main class="page-content">
+    <h1 class="page-title">
+        Edit Stats: <span class="text-green" th:text="${player.username}">Steve</span>
+    </h1>
+
+    <div class="panel">
+        <div class="panel-header">Player Stats</div>
+        <div class="panel-body" style="padding: 20px;">
+            <form th:action="@{/admin/players/{id}/edit(id=${player.id})}" method="post" class="admin-form">
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="kills">Kills</label>
+                        <input type="number" id="kills" name="kills" th:value="${stats.kills}" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="deaths">Deaths</label>
+                        <input type="number" id="deaths" name="deaths" th:value="${stats.deaths}" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="damageDealt">Damage Dealt</label>
+                        <input type="number" id="damageDealt" name="damageDealt" th:value="${stats.damageDealt}" step="0.1" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="damageReceived">Damage Received</label>
+                        <input type="number" id="damageReceived" name="damageReceived" th:value="${stats.damageReceived}" step="0.1" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="mobsKilled">Mobs Killed</label>
+                        <input type="number" id="mobsKilled" name="mobsKilled" th:value="${stats.mobsKilled}" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="blocksPlaced">Blocks Placed</label>
+                        <input type="number" id="blocksPlaced" name="blocksPlaced" th:value="${stats.blocksPlaced}" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="blocksMined">Blocks Mined</label>
+                        <input type="number" id="blocksMined" name="blocksMined" th:value="${stats.blocksMined}" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="itemsCrafted">Items Crafted</label>
+                        <input type="number" id="itemsCrafted" name="itemsCrafted" th:value="${stats.itemsCrafted}" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="distanceWalked">Distance Walked</label>
+                        <input type="number" id="distanceWalked" name="distanceWalked" th:value="${stats.distanceWalked}" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="distanceSwum">Distance Swum</label>
+                        <input type="number" id="distanceSwum" name="distanceSwum" th:value="${stats.distanceSwum}" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="distanceFlown">Distance Flown</label>
+                        <input type="number" id="distanceFlown" name="distanceFlown" th:value="${stats.distanceFlown}" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="distanceSailed">Distance Sailed</label>
+                        <input type="number" id="distanceSailed" name="distanceSailed" th:value="${stats.distanceSailed}" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="shotsFired">Shots Fired</label>
+                        <input type="number" id="shotsFired" name="shotsFired" th:value="${stats.shotsFired}" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="shotsHit">Shots Hit</label>
+                        <input type="number" id="shotsHit" name="shotsHit" th:value="${stats.shotsHit}" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="longestShotBlocks">Longest Shot (blocks)</label>
+                        <input type="number" id="longestShotBlocks" name="longestShotBlocks" th:value="${stats.longestShotBlocks}" min="0">
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Save Stats</button>
+                    <a th:href="@{/admin/players}" class="btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>

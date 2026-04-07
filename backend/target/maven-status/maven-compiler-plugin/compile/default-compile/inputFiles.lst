@@ -1,6 +1,7 @@
 /home/overseer/Projects/university/lab1/ArCraft/backend/src/main/java/org/austral/ing/arcraft/ArcraftApplication.java
 /home/overseer/Projects/university/lab1/ArCraft/backend/src/main/java/org/austral/ing/arcraft/config/SecurityConfig.java
 /home/overseer/Projects/university/lab1/ArCraft/backend/src/main/java/org/austral/ing/arcraft/config/WebController.java
+/home/overseer/Projects/university/lab1/ArCraft/backend/src/main/java/org/austral/ing/arcraft/controller/AdminController.java
 /home/overseer/Projects/university/lab1/ArCraft/backend/src/main/java/org/austral/ing/arcraft/controller/DashboardController.java
 /home/overseer/Projects/university/lab1/ArCraft/backend/src/main/java/org/austral/ing/arcraft/controller/PlayerController.java
 /home/overseer/Projects/university/lab1/ArCraft/backend/src/main/java/org/austral/ing/arcraft/controller/RankingsController.java
@@ -31,6 +32,7 @@
 /home/overseer/Projects/university/lab1/ArCraft/backend/src/main/java/org/austral/ing/arcraft/repository/PvPHitRepository.java
 /home/overseer/Projects/university/lab1/ArCraft/backend/src/main/java/org/austral/ing/arcraft/repository/ServerConfigRepository.java
 /home/overseer/Projects/university/lab1/ArCraft/backend/src/main/java/org/austral/ing/arcraft/seed/DataSeeder.java
+/home/overseer/Projects/university/lab1/ArCraft/backend/src/main/java/org/austral/ing/arcraft/service/AdminService.java
 /home/overseer/Projects/university/lab1/ArCraft/backend/src/main/java/org/austral/ing/arcraft/service/DashboardService.java
 /home/overseer/Projects/university/lab1/ArCraft/backend/src/main/java/org/austral/ing/arcraft/service/PlayerProfileService.java
 /home/overseer/Projects/university/lab1/ArCraft/backend/src/main/java/org/austral/ing/arcraft/service/RankingsService.java

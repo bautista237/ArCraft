@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <!-- Navbar fragment -->
 <header th:fragment="navbar(activePage)" class="navbar">
@@ -9,6 +10,8 @@
     <nav>
         <a th:href="@{/dashboard}" th:classappend="${activePage == 'dashboard'} ? 'active'">Dashboard</a>
         <a th:href="@{/rankings}" th:classappend="${activePage == 'rankings'} ? 'active'">Rankings</a>
+        <a th:href="@{/admin}" th:classappend="${activePage == 'admin'} ? 'active'"
+           sec:authorize="hasRole('ROLE_ADMIN')">Admin</a>
     </nav>
     <div class="user-section">
         <span class="username" th:text="${#authentication.name}">player</span>

@@ -352,6 +352,230 @@ a:hover { color: #34d399; }
     font-weight: 500;
 }
 
+/* === Admin Panel === */
+.admin-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+}
+
+.admin-card {
+    display: block;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    padding: 28px 24px;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.admin-card:hover {
+    border-color: #10b981;
+    background: #1e1e1e;
+    transform: translateY(-2px);
+}
+
+.admin-card-icon {
+    font-size: 1.8rem;
+    margin-bottom: 12px;
+}
+
+.admin-card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #f5f5f5;
+    margin-bottom: 6px;
+}
+
+.admin-card-desc {
+    font-size: 0.8rem;
+    color: #737373;
+}
+
+/* === Admin Forms === */
+.admin-form label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #737373;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+.admin-form input[type="text"],
+.admin-form input[type="password"],
+.admin-form input[type="number"],
+.admin-form select {
+    width: 100%;
+    padding: 8px 12px;
+    background: #111111;
+    border: 1px solid #2a2a2a;
+    border-radius: 6px;
+    color: #e5e5e5;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    transition: border-color 0.2s;
+}
+
+.admin-form input:focus,
+.admin-form select:focus {
+    outline: none;
+    border-color: #10b981;
+}
+
+.admin-form input[type="number"] {
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.form-row {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.form-row .form-group {
+    flex: 1;
+    min-width: 140px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.form-check-group {
+    display: flex;
+    align-items: center;
+    padding-bottom: 8px;
+}
+
+.check-label {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    text-transform: none !important;
+    font-size: 0.85rem !important;
+    color: #e5e5e5 !important;
+}
+
+.check-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #10b981;
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #2a2a2a;
+}
+
+.btn-primary {
+    padding: 8px 20px;
+    background: #10b981;
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+}
+
+.btn-primary:hover {
+    background: #059669;
+}
+
+.btn-secondary {
+    display: inline-block;
+    padding: 8px 20px;
+    background: transparent;
+    border: 1px solid #333;
+    border-radius: 6px;
+    color: #a3a3a3;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.btn-secondary:hover {
+    border-color: #555;
+    color: #e5e5e5;
+}
+
+.btn-small {
+    display: inline-block;
+    padding: 4px 12px;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 4px;
+    color: #10b981;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+}
+
+.btn-small:hover {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+}
+
+.btn-small.btn-danger {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #f87171;
+}
+
+.btn-small.btn-danger:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+}
+
+.btn-small.btn-green {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.3);
+    color: #10b981;
+}
+
+.btn-small.btn-green:hover {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+}
+
+/* === Badges === */
+.badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.badge-green { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+.badge-orange { background: rgba(249, 115, 22, 0.15); color: #fb923c; }
+.badge-pvp_kill { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+.badge-boss_kill { background: rgba(249, 115, 22, 0.15); color: #fb923c; }
+.badge-achievement { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+.badge-player_death { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
+.badge-server_milestone { background: rgba(6, 182, 212, 0.15); color: #22d3ee; }
+.badge-custom { background: rgba(163, 163, 163, 0.15); color: #a3a3a3; }
+
 /* === Utilities === */
 .text-green { color: #10b981; }
 .text-aqua { color: #06b6d4; }

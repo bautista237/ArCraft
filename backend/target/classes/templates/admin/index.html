@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin — ArCraft</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<header th:replace="~{fragments/layout :: navbar('admin')}"></header>
+
+<main class="page-content">
+    <h1 class="page-title">Admin Panel</h1>
+
+    <div class="admin-cards">
+        <a th:href="@{/admin/players}" class="admin-card">
+            <div class="admin-card-icon">&#x1F464;</div>
+            <div class="admin-card-title">Players</div>
+            <div class="admin-card-desc">Create, edit players and manage stats</div>
+        </a>
+        <a th:href="@{/admin/events}" class="admin-card">
+            <div class="admin-card-icon">&#x1F4DC;</div>
+            <div class="admin-card-title">Events</div>
+            <div class="admin-card-desc">View and log server events</div>
+        </a>
+        <a th:href="@{/admin/clans}" class="admin-card">
+            <div class="admin-card-icon">&#x2694;</div>
+            <div class="admin-card-title">Clans</div>
+            <div class="admin-card-desc">Create, edit clans and manage members</div>
+        </a>
+    </div>
+</main>
+
+</body>
+</html>
