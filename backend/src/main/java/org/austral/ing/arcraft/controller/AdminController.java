@@ -88,7 +88,7 @@ public class AdminController {
                                     @RequestParam(required = false) Double shotsHit,
                                     @RequestParam(required = false) Double longestShotBlocks) {
         adminService.updatePlayerStats(id,
-                roundL(kills), roundL(deaths), nz(damageDealt), nz(damageReceived),
+                roundL(kills), roundL(deaths), roundF(damageDealt), roundF(damageReceived),
                 roundL(mobsKilled), roundL(blocksPlaced), roundL(blocksMined), roundL(itemsCrafted),
                 roundL(distanceWalked), roundL(distanceSwum), roundL(distanceFlown), roundL(distanceSailed),
                 roundL(shotsFired), roundL(shotsHit), roundL(longestShotBlocks));
@@ -96,7 +96,7 @@ public class AdminController {
     }
 
     private static long roundL(Double v) { return v == null ? 0L : Math.round(v); }
-    private static float nz(Float v) { return v == null ? 0f : v; }
+    private static float roundF(Float v) { return v == null ? 0f : Math.round(v); }
 
     @PostMapping("/players/{id}/delete")
     public String deletePlayer(@PathVariable UUID id, RedirectAttributes redirectAttributes) {

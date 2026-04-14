@@ -39,11 +39,11 @@
                     </div>
                     <div class="form-group">
                         <label for="damageDealt">Damage Dealt</label>
-                        <input type="number" id="damageDealt" name="damageDealt" th:value="${stats.damageDealt}" step="0.1" min="0">
+                        <input type="number" id="damageDealt" name="damageDealt" th:value="${T(java.lang.Math).round(stats.damageDealt)}" min="0" step="any">
                     </div>
                     <div class="form-group">
                         <label for="damageReceived">Damage Received</label>
-                        <input type="number" id="damageReceived" name="damageReceived" th:value="${stats.damageReceived}" step="0.1" min="0">
+                        <input type="number" id="damageReceived" name="damageReceived" th:value="${T(java.lang.Math).round(stats.damageReceived)}" min="0" step="any">
                     </div>
                     <div class="form-group">
                         <label for="mobsKilled">Mobs Killed</label>
