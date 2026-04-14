@@ -99,7 +99,9 @@ public class ClanController {
         model.addAttribute("totalBlocksPlaced", agg[4]);
         model.addAttribute("totalItemsCrafted", agg[5]);
         model.addAttribute("totalDistance", agg[6]);
-        model.addAttribute("messages", clanService.getRecentMessages(clan.getId(), 50));
+        if (isMember) {
+            model.addAttribute("messages", clanService.getRecentMessages(clan.getId(), 50));
+        }
         model.addAttribute("isMember", isMember);
         model.addAttribute("isAdmin", isAdmin);
         model.addAttribute("hasNoClan", hasNoClan);
@@ -118,7 +120,7 @@ public class ClanController {
                 .orElseThrow(() -> new RuntimeException("Player not found"));
 
         boolean isMember = player.getClan() != null && player.getClan().getId().equals(clan.getId());
-        if (!isMember && !player.isAdmin()) {
+        if (!isMember) {
             redirectAttributes.addFlashAttribute("error", "You must be a member of this clan to send messages.");
             return "redirect:/clans/" + tag;
         }

@@ -139,8 +139,8 @@
             </div>
         </div>
 
-        <!-- Clan Chat -->
-        <div class="panel chat-section">
+        <!-- Clan Chat: only members can read or write -->
+        <div class="panel chat-section" th:if="${isMember}">
             <div class="panel-header">Clan Chat</div>
             <div class="chat-messages">
                 <div th:if="${#lists.isEmpty(messages)}" class="empty-state">No messages yet.</div>
@@ -150,11 +150,16 @@
                     <div class="chat-text" th:text="${msg.content}">Hello!</div>
                 </div>
             </div>
-            <!-- Chat form: only for members or admins -->
-            <form th:if="${isMember or isAdmin}" th:action="@{/clans/{t}/message(t=${clan.tag})}" method="post" class="chat-form">
+            <form th:action="@{/clans/{t}/message(t=${clan.tag})}" method="post" class="chat-form">
                 <input type="text" name="content" placeholder="Type a message..." autocomplete="off" required/>
                 <button type="submit" class="btn-primary">Send</button>
             </form>
+        </div>
+        <div class="panel chat-section" th:unless="${isMember}">
+            <div class="panel-header">Clan Chat</div>
+            <div class="panel-body">
+                <div class="empty-state">Only clan members can read or write in this chat.</div>
+            </div>
         </div>
 
     </main>
