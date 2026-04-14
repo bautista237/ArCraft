@@ -3,9 +3,12 @@ package org.austral.ing.arcraft.controller;
 import lombok.RequiredArgsConstructor;
 import org.austral.ing.arcraft.entity.EventLog;
 import org.austral.ing.arcraft.service.AdminService;
+import org.springframework.beans.propertyeditors.CustomNumberEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.UUID;
 
@@ -15,6 +18,12 @@ import java.util.UUID;
 public class AdminController {
 
     private final AdminService adminService;
+
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        binder.registerCustomEditor(Long.class, new CustomNumberEditor(Long.class, true));
+        binder.registerCustomEditor(Float.class, new CustomNumberEditor(Float.class, true));
+    }
 
     // ── Admin Home ───────────────────────────────────────────
 
@@ -34,8 +43,16 @@ public class AdminController {
     @PostMapping("/players")
     public String createPlayer(@RequestParam String username,
                                @RequestParam String password,
-                               @RequestParam(defaultValue = "false") boolean isAdmin) {
-        adminService.createPlayer(username, password, isAdmin);
+                               @RequestParam(defaultValue = "false") boolean isAdmin,
+                               RedirectAttributes redirectAttributes) {
+        boolean created = adminService.createPlayer(username, password, isAdmin);
+        if (!created) {
+            redirectAttributes.addFlashAttribute("error",
+                    "A player with username '" + username + "' already exists.");
+        } else {
+            redirectAttributes.addFlashAttribute("success",
+                    "Player '" + username + "' created successfully.");
+        }
         return "redirect:/admin/players";
     }
 
@@ -48,27 +65,31 @@ public class AdminController {
 
     @PostMapping("/players/{id}/edit")
     public String updatePlayerStats(@PathVariable UUID id,
-                                    @RequestParam long kills,
-                                    @RequestParam long deaths,
-                                    @RequestParam float damageDealt,
-                                    @RequestParam float damageReceived,
-                                    @RequestParam long mobsKilled,
-                                    @RequestParam long blocksPlaced,
-                                    @RequestParam long blocksMined,
-                                    @RequestParam long itemsCrafted,
-                                    @RequestParam long distanceWalked,
-                                    @RequestParam long distanceSwum,
-                                    @RequestParam long distanceFlown,
-                                    @RequestParam long distanceSailed,
-                                    @RequestParam long shotsFired,
-                                    @RequestParam long shotsHit,
-                                    @RequestParam long longestShotBlocks) {
-        adminService.updatePlayerStats(id, kills, deaths, damageDealt, damageReceived,
-                mobsKilled, blocksPlaced, blocksMined, itemsCrafted,
-                distanceWalked, distanceSwum, distanceFlown, distanceSailed,
-                shotsFired, shotsHit, longestShotBlocks);
+                                    @RequestParam(required = false) Long kills,
+                                    @RequestParam(required = false) Long deaths,
+                                    @RequestParam(required = false) Float damageDealt,
+                                    @RequestParam(required = false) Float damageReceived,
+                                    @RequestParam(required = false) Long mobsKilled,
+                                    @RequestParam(required = false) Long blocksPlaced,
+                                    @RequestParam(required = false) Long blocksMined,
+                                    @RequestParam(required = false) Long itemsCrafted,
+                                    @RequestParam(required = false) Long distanceWalked,
+                                    @RequestParam(required = false) Long distanceSwum,
+                                    @RequestParam(required = false) Long distanceFlown,
+                                    @RequestParam(required = false) Long distanceSailed,
+                                    @RequestParam(required = false) Long shotsFired,
+                                    @RequestParam(required = false) Long shotsHit,
+                                    @RequestParam(required = false) Long longestShotBlocks) {
+        adminService.updatePlayerStats(id,
+                nz(kills), nz(deaths), nz(damageDealt), nz(damageReceived),
+                nz(mobsKilled), nz(blocksPlaced), nz(blocksMined), nz(itemsCrafted),
+                nz(distanceWalked), nz(distanceSwum), nz(distanceFlown), nz(distanceSailed),
+                nz(shotsFired), nz(shotsHit), nz(longestShotBlocks));
         return "redirect:/admin/players";
     }
+
+    private static long nz(Long v) { return v == null ? 0L : v; }
+    private static float nz(Float v) { return v == null ? 0f : v; }
 
     // ── Events ───────────────────────────────────────────────
 

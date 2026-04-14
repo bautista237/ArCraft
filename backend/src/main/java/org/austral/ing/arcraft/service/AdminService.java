@@ -36,7 +36,13 @@ public class AdminService {
         return playerStatsRepository.findByPlayerId(playerId).orElseThrow();
     }
 
-    public void createPlayer(String username, String password, boolean isAdmin) {
+    public boolean createPlayer(String username, String password, boolean isAdmin) {
+        if (username == null || username.isBlank()) {
+            return false;
+        }
+        if (playerRepository.existsByUsername(username)) {
+            return false;
+        }
         Player player = new Player();
         player.setUsername(username);
         player.setPasswordHash(passwordEncoder.encode(password));
@@ -47,6 +53,7 @@ public class AdminService {
         PlayerStats stats = new PlayerStats();
         stats.setPlayer(player);
         playerStatsRepository.save(stats);
+        return true;
     }
 
     public void updatePlayerStats(UUID playerId, long kills, long deaths,

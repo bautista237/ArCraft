@@ -14,6 +14,13 @@
 <main class="page-content">
     <h1 class="page-title">Player Management</h1>
 
+    <div th:if="${error}" class="alert alert-error"
+         style="padding:12px 20px;border-radius:8px;font-size:0.85rem;margin-bottom:20px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#f87171;"
+         th:text="${error}"></div>
+    <div th:if="${success}" class="alert alert-success"
+         style="padding:12px 20px;border-radius:8px;font-size:0.85rem;margin-bottom:20px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#34d399;"
+         th:text="${success}"></div>
+
     <!-- Create Player Form -->
     <div class="panel" style="margin-bottom: 32px;">
         <div class="panel-header">Create New Player</div>
