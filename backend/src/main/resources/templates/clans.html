@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Clans — ArCraft</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+    <div th:replace="~{fragments/layout :: navbar('clans')}"></div>
+
+    <main class="page-content">
+        <h2 class="page-title">Clans</h2>
+
+        <div class="panel">
+            <div class="panel-body">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Tag</th>
+                            <th>Name</th>
+                            <th>Leader</th>
+                            <th class="text-right">Members</th>
+                            <th class="text-right">Kills</th>
+                            <th class="text-right">Mobs Killed</th>
+                            <th class="text-right">Blocks Mined</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="row : ${clanRows}">
+                            <td>
+                                <a class="player-link" th:href="@{/clans/{t}(t=${row.clan.tag})}"
+                                   th:text="'[' + ${row.clan.tag} + ']'">ARC</a>
+                            </td>
+                            <td>
+                                <a th:href="@{/clans/{t}(t=${row.clan.tag})}"
+                                   th:text="${row.clan.name}">Clan Name</a>
+                            </td>
+                            <td>
+                                <a class="player-link" th:href="@{/players/{u}(u=${row.clan.leader.username})}"
+                                   th:text="${row.clan.leader.username}">Leader</a>
+                            </td>
+                            <td class="num text-right" th:text="${row.memberCount}">0</td>
+                            <td class="num text-right" th:text="${#numbers.formatInteger(row.totalKills, 1, 'COMMA')}">0</td>
+                            <td class="num text-right" th:text="${#numbers.formatInteger(row.totalMobsKilled, 1, 'COMMA')}">0</td>
+                            <td class="num text-right" th:text="${#numbers.formatInteger(row.totalBlocksMined, 1, 'COMMA')}">0</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="empty-state" th:if="${#lists.isEmpty(clanRows)}">No clans yet.</div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

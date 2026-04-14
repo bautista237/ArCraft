@@ -10,6 +10,7 @@
     <nav>
         <a th:href="@{/dashboard}" th:classappend="${activePage == 'dashboard'} ? 'active'">Dashboard</a>
         <a th:href="@{/rankings}" th:classappend="${activePage == 'rankings'} ? 'active'">Rankings</a>
+        <a th:href="@{/clans}" th:classappend="${activePage == 'clans'} ? 'active'">Clans</a>
         <a th:href="@{/admin}" th:classappend="${activePage == 'admin'} ? 'active'"
            sec:authorize="hasRole('ROLE_ADMIN')">Admin</a>
     </nav>

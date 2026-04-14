@@ -8,5 +8,6 @@ import java.util.UUID;
 
 public interface ClanRepository extends JpaRepository<Clan, UUID> {
     Optional<Clan> findByName(String name);
+    Optional<Clan> findByTag(String tag);
     boolean existsByName(String name);
 }
