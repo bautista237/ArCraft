@@ -14,6 +14,13 @@
 <main class="page-content">
     <h1 class="page-title">Clan Management</h1>
 
+    <div th:if="${error}" class="alert alert-error"
+         style="padding:12px 20px;border-radius:8px;font-size:0.85rem;margin-bottom:20px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#f87171;"
+         th:text="${error}"></div>
+    <div th:if="${success}" class="alert alert-success"
+         style="padding:12px 20px;border-radius:8px;font-size:0.85rem;margin-bottom:20px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#34d399;"
+         th:text="${success}"></div>
+
     <!-- Create Clan Form -->
     <div class="panel" style="margin-bottom: 32px;">
         <div class="panel-header">Create New Clan</div>
@@ -76,6 +83,12 @@
                         </td>
                         <td>
                             <a th:href="@{/admin/clans/{id}/edit(id=${clan.id})}" class="btn-small">Edit</a>
+                            <form th:action="@{/admin/clans/{id}/delete(id=${clan.id})}" method="post"
+                                  style="display:inline;margin-left:6px;"
+                                  th:attr="onsubmit=|return confirm('¿Seguro que querés eliminar el clan ${clan.name}? Sus miembros serán expulsados y los mensajes del chat se borrarán.');|">
+                                <button type="submit" class="btn-small"
+                                        style="border-color:#ef4444;color:#f87171;">Delete</button>
+                            </form>
                         </td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(clans)}">

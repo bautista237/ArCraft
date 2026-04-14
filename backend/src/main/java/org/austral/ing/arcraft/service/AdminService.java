@@ -178,14 +178,32 @@ public class AdminService {
                 .count();
     }
 
-    public void createClan(String name, String tag, UUID leaderId, boolean friendlyFireEnabled) {
+    public String createClan(String name, String tag, UUID leaderId, boolean friendlyFireEnabled) {
+        if (name == null || name.isBlank() || tag == null || tag.isBlank()) {
+            return "Name and tag are required.";
+        }
+        if (clanRepository.existsByName(name)) {
+            return "A clan with name '" + name + "' already exists.";
+        }
+        Player leader = playerRepository.findById(leaderId).orElse(null);
+        if (leader == null) {
+            return "Selected leader does not exist.";
+        }
+        if (leader.getClan() != null) {
+            return "Selected leader already belongs to a clan.";
+        }
+
         Clan clan = new Clan();
         clan.setName(name);
         clan.setTag(tag);
-        clan.setLeader(playerRepository.findById(leaderId).orElseThrow());
+        clan.setLeader(leader);
         clan.setFriendlyFireEnabled(friendlyFireEnabled);
         clan.setCreatedAt(Instant.now());
         clanRepository.save(clan);
+
+        leader.setClan(clan);
+        playerRepository.save(leader);
+        return null;
     }
 
     public void updateClan(UUID clanId, String name, String tag, UUID leaderId, boolean friendlyFireEnabled) {
@@ -208,5 +226,19 @@ public class AdminService {
         Player player = playerRepository.findById(playerId).orElseThrow();
         player.setClan(null);
         playerRepository.save(player);
+    }
+
+    public String deleteClan(UUID clanId) {
+        if (!clanRepository.existsById(clanId)) {
+            return "Clan not found.";
+        }
+        entityManager.createNativeQuery("UPDATE player SET clan_id = NULL WHERE clan_id = :cid")
+                .setParameter("cid", clanId).executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM clan_message WHERE clan_id = :cid")
+                .setParameter("cid", clanId).executeUpdate();
+        entityManager.flush();
+        entityManager.clear();
+        clanRepository.deleteById(clanId);
+        return null;
     }
 }

@@ -147,8 +147,25 @@ public class AdminController {
     public String createClan(@RequestParam String name,
                              @RequestParam String tag,
                              @RequestParam UUID leaderId,
-                             @RequestParam(defaultValue = "false") boolean friendlyFireEnabled) {
-        adminService.createClan(name, tag, leaderId, friendlyFireEnabled);
+                             @RequestParam(defaultValue = "false") boolean friendlyFireEnabled,
+                             RedirectAttributes redirectAttributes) {
+        String error = adminService.createClan(name, tag, leaderId, friendlyFireEnabled);
+        if (error != null) {
+            redirectAttributes.addFlashAttribute("error", error);
+        } else {
+            redirectAttributes.addFlashAttribute("success", "Clan '" + name + "' created successfully.");
+        }
+        return "redirect:/admin/clans";
+    }
+
+    @PostMapping("/clans/{id}/delete")
+    public String deleteClan(@PathVariable UUID id, RedirectAttributes redirectAttributes) {
+        String error = adminService.deleteClan(id);
+        if (error != null) {
+            redirectAttributes.addFlashAttribute("error", error);
+        } else {
+            redirectAttributes.addFlashAttribute("success", "Clan deleted. All members have been removed from it.");
+        }
         return "redirect:/admin/clans";
     }
 
