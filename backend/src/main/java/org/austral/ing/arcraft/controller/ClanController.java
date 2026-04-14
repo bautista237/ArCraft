@@ -80,12 +80,14 @@ public class ClanController {
         boolean isMember = false;
         boolean isAdmin = false;
         boolean hasNoClan = false;
+        boolean isLeader = false;
         if (principal != null) {
             currentPlayer = playerRepository.findByUsername(principal.getName()).orElse(null);
             if (currentPlayer != null) {
                 isAdmin = currentPlayer.isAdmin();
                 isMember = currentPlayer.getClan() != null && currentPlayer.getClan().getId().equals(clan.getId());
                 hasNoClan = currentPlayer.getClan() == null;
+                isLeader = clan.getLeader() != null && clan.getLeader().getId().equals(currentPlayer.getId());
             }
         }
 
@@ -105,6 +107,8 @@ public class ClanController {
         model.addAttribute("isMember", isMember);
         model.addAttribute("isAdmin", isAdmin);
         model.addAttribute("hasNoClan", hasNoClan);
+        model.addAttribute("isLeader", isLeader);
+        model.addAttribute("leaderId", clan.getLeader() != null ? clan.getLeader().getId() : null);
 
         return "clan-profile";
     }
@@ -164,6 +168,27 @@ public class ClanController {
             redirectAttributes.addFlashAttribute("error", error);
         } else {
             redirectAttributes.addFlashAttribute("success", "You left " + clan.getName() + ".");
+        }
+        return "redirect:/clans/" + tag;
+    }
+
+    @PostMapping("/clans/{tag}/kick")
+    public String kickMember(@PathVariable String tag,
+                             @RequestParam String username,
+                             Principal principal,
+                             RedirectAttributes redirectAttributes) {
+        Clan clan = clanService.findByTag(tag)
+                .orElseThrow(() -> new RuntimeException("Clan not found: " + tag));
+        Player leader = playerRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Player not found"));
+        Player target = playerRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Target player not found"));
+
+        String error = clanService.kickMember(leader, target, clan);
+        if (error != null) {
+            redirectAttributes.addFlashAttribute("error", error);
+        } else {
+            redirectAttributes.addFlashAttribute("success", "Removed " + target.getUsername() + " from the clan.");
         }
         return "redirect:/clans/" + tag;
     }

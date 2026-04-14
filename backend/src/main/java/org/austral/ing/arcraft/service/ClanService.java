@@ -81,6 +81,22 @@ public class ClanService {
         return null;
     }
 
+    @Transactional
+    public String kickMember(Player leader, Player target, Clan clan) {
+        if (!clan.getLeader().getId().equals(leader.getId())) {
+            return "Only the clan leader can remove members.";
+        }
+        if (target.getClan() == null || !target.getClan().getId().equals(clan.getId())) {
+            return "That player is not a member of this clan.";
+        }
+        if (target.getId().equals(leader.getId())) {
+            return "The leader cannot kick themselves.";
+        }
+        target.setClan(null);
+        playerRepository.save(target);
+        return null;
+    }
+
     /** Aggregate stats for all members of a clan. Returns long[7]: kills, deaths, mobsKilled, blocksMined, blocksPlaced, itemsCrafted, totalDistance */
     public long[] getAggregateStats(List<Player> members) {
         long kills = 0, deaths = 0, mobsKilled = 0, blocksMined = 0, blocksPlaced = 0, itemsCrafted = 0, totalDistance = 0;

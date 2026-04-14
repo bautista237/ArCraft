@@ -120,6 +120,7 @@
                             <th class="text-right">Deaths</th>
                             <th class="text-right">K/D</th>
                             <th class="text-right">Mobs Killed</th>
+                            <th th:if="${isLeader}" class="text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -132,6 +133,18 @@
                             <td class="num text-right" th:text="${row.deaths}">0</td>
                             <td class="num text-right" th:text="${#numbers.formatDecimal(row.kdRatio, 1, 2)}">0.00</td>
                             <td class="num text-right" th:text="${row.mobsKilled}">0</td>
+                            <td th:if="${isLeader}" class="text-right">
+                                <form th:if="${!row.player.id.equals(leaderId)}"
+                                      th:action="@{/clans/{t}/kick(t=${clan.tag})}" method="post"
+                                      onsubmit="return confirm('Remove this member from the clan?');"
+                                      style="display:inline;">
+                                    <input type="hidden" name="username" th:value="${row.player.username}"/>
+                                    <button type="submit" class="btn-secondary"
+                                            style="border-color:#ef4444;color:#f87171;padding:4px 10px;font-size:0.75rem;">
+                                        Kick
+                                    </button>
+                                </form>
+                            </td>
                         </tr>
                     </tbody>
                 </table>

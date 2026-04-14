@@ -198,6 +198,15 @@ a:hover { color: #34d399; }
     background: rgba(16, 185, 129, 0.04);
 }
 
+.data-table th.text-right,
+.data-table td.text-right {
+    text-align: right;
+}
+.data-table th.text-center,
+.data-table td.text-center {
+    text-align: center;
+}
+
 .data-table .rank {
     font-family: 'JetBrains Mono', monospace;
     color: #525252;
