@@ -1,5 +1,7 @@
 package org.austral.ing.arcraft.service;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.austral.ing.arcraft.entity.*;
 import org.austral.ing.arcraft.repository.*;
@@ -9,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -22,6 +25,9 @@ public class AdminService {
     private final ClanRepository clanRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     // ── Players ──────────────────────────────────────────────
 
     public List<Player> getAllPlayers() {
@@ -32,8 +38,16 @@ public class AdminService {
         return playerRepository.findById(id).orElseThrow();
     }
 
+    public Optional<Player> findPlayer(UUID id) {
+        return playerRepository.findById(id);
+    }
+
     public PlayerStats getPlayerStats(UUID playerId) {
         return playerStatsRepository.findByPlayerId(playerId).orElseThrow();
+    }
+
+    public Optional<PlayerStats> findPlayerStats(UUID playerId) {
+        return playerStatsRepository.findByPlayerId(playerId);
     }
 
     public boolean createPlayer(String username, String password, boolean isAdmin) {
@@ -79,6 +93,44 @@ public class AdminService {
         stats.setShotsHit(shotsHit);
         stats.setLongestShotBlocks(longestShotBlocks);
         playerStatsRepository.save(stats);
+    }
+
+    public String deletePlayer(UUID playerId) {
+        Player player = playerRepository.findById(playerId).orElse(null);
+        if (player == null) {
+            return "Player not found.";
+        }
+        if (clanRepository.existsByLeaderId(playerId)) {
+            return "Cannot delete a player who is the leader of a clan. Reassign leadership first.";
+        }
+
+        entityManager.createNativeQuery(
+                "DELETE FROM pvp_hit WHERE attacker_id = :pid OR pvp_event_id IN " +
+                "(SELECT id FROM pvp_event WHERE killer_id = :pid OR victim_id = :pid)")
+                .setParameter("pid", playerId).executeUpdate();
+        entityManager.createNativeQuery(
+                "DELETE FROM pvp_event WHERE killer_id = :pid OR victim_id = :pid")
+                .setParameter("pid", playerId).executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM clan_message WHERE sender_id = :pid")
+                .setParameter("pid", playerId).executeUpdate();
+        entityManager.createNativeQuery("UPDATE event_log SET player_id = NULL WHERE player_id = :pid")
+                .setParameter("pid", playerId).executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM block_stat_entry WHERE player_id = :pid")
+                .setParameter("pid", playerId).executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM item_stat_entry WHERE player_id = :pid")
+                .setParameter("pid", playerId).executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM mob_stat_entry WHERE player_id = :pid")
+                .setParameter("pid", playerId).executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM player_achievement WHERE player_id = :pid")
+                .setParameter("pid", playerId).executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM player_stats WHERE player_id = :pid")
+                .setParameter("pid", playerId).executeUpdate();
+
+        entityManager.flush();
+        entityManager.clear();
+
+        playerRepository.deleteById(playerId);
+        return null;
     }
 
     // ── Events ───────────────────────────────────────────────

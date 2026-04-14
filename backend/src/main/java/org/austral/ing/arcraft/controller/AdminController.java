@@ -23,6 +23,7 @@ public class AdminController {
     public void initBinder(WebDataBinder binder) {
         binder.registerCustomEditor(Long.class, new CustomNumberEditor(Long.class, true));
         binder.registerCustomEditor(Float.class, new CustomNumberEditor(Float.class, true));
+        binder.registerCustomEditor(Double.class, new CustomNumberEditor(Double.class, true));
     }
 
     // ── Admin Home ───────────────────────────────────────────
@@ -57,39 +58,56 @@ public class AdminController {
     }
 
     @GetMapping("/players/{id}/edit")
-    public String editPlayer(@PathVariable UUID id, Model model) {
-        model.addAttribute("player", adminService.getPlayer(id));
-        model.addAttribute("stats", adminService.getPlayerStats(id));
+    public String editPlayer(@PathVariable UUID id, Model model, RedirectAttributes redirectAttributes) {
+        var playerOpt = adminService.findPlayer(id);
+        if (playerOpt.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error",
+                    "No se puede acceder a las estadísticas de un jugador inexistente.");
+            return "redirect:/admin/players";
+        }
+        model.addAttribute("player", playerOpt.get());
+        model.addAttribute("stats", adminService.findPlayerStats(id).orElse(new org.austral.ing.arcraft.entity.PlayerStats()));
         return "admin/player-edit";
     }
 
     @PostMapping("/players/{id}/edit")
     public String updatePlayerStats(@PathVariable UUID id,
-                                    @RequestParam(required = false) Long kills,
-                                    @RequestParam(required = false) Long deaths,
+                                    @RequestParam(required = false) Double kills,
+                                    @RequestParam(required = false) Double deaths,
                                     @RequestParam(required = false) Float damageDealt,
                                     @RequestParam(required = false) Float damageReceived,
-                                    @RequestParam(required = false) Long mobsKilled,
-                                    @RequestParam(required = false) Long blocksPlaced,
-                                    @RequestParam(required = false) Long blocksMined,
-                                    @RequestParam(required = false) Long itemsCrafted,
-                                    @RequestParam(required = false) Long distanceWalked,
-                                    @RequestParam(required = false) Long distanceSwum,
-                                    @RequestParam(required = false) Long distanceFlown,
-                                    @RequestParam(required = false) Long distanceSailed,
-                                    @RequestParam(required = false) Long shotsFired,
-                                    @RequestParam(required = false) Long shotsHit,
-                                    @RequestParam(required = false) Long longestShotBlocks) {
+                                    @RequestParam(required = false) Double mobsKilled,
+                                    @RequestParam(required = false) Double blocksPlaced,
+                                    @RequestParam(required = false) Double blocksMined,
+                                    @RequestParam(required = false) Double itemsCrafted,
+                                    @RequestParam(required = false) Double distanceWalked,
+                                    @RequestParam(required = false) Double distanceSwum,
+                                    @RequestParam(required = false) Double distanceFlown,
+                                    @RequestParam(required = false) Double distanceSailed,
+                                    @RequestParam(required = false) Double shotsFired,
+                                    @RequestParam(required = false) Double shotsHit,
+                                    @RequestParam(required = false) Double longestShotBlocks) {
         adminService.updatePlayerStats(id,
-                nz(kills), nz(deaths), nz(damageDealt), nz(damageReceived),
-                nz(mobsKilled), nz(blocksPlaced), nz(blocksMined), nz(itemsCrafted),
-                nz(distanceWalked), nz(distanceSwum), nz(distanceFlown), nz(distanceSailed),
-                nz(shotsFired), nz(shotsHit), nz(longestShotBlocks));
+                roundL(kills), roundL(deaths), nz(damageDealt), nz(damageReceived),
+                roundL(mobsKilled), roundL(blocksPlaced), roundL(blocksMined), roundL(itemsCrafted),
+                roundL(distanceWalked), roundL(distanceSwum), roundL(distanceFlown), roundL(distanceSailed),
+                roundL(shotsFired), roundL(shotsHit), roundL(longestShotBlocks));
         return "redirect:/admin/players";
     }
 
-    private static long nz(Long v) { return v == null ? 0L : v; }
+    private static long roundL(Double v) { return v == null ? 0L : Math.round(v); }
     private static float nz(Float v) { return v == null ? 0f : v; }
+
+    @PostMapping("/players/{id}/delete")
+    public String deletePlayer(@PathVariable UUID id, RedirectAttributes redirectAttributes) {
+        String error = adminService.deletePlayer(id);
+        if (error != null) {
+            redirectAttributes.addFlashAttribute("error", error);
+            return "redirect:/admin/players/" + id + "/edit";
+        }
+        redirectAttributes.addFlashAttribute("success", "Player deleted successfully.");
+        return "redirect:/admin/players";
+    }
 
     // ── Events ───────────────────────────────────────────────
 

@@ -16,6 +16,13 @@
         Edit Stats: <span class="text-green" th:text="${player.username}">Steve</span>
     </h1>
 
+    <div th:if="${error}" class="alert alert-error"
+         style="padding:12px 20px;border-radius:8px;font-size:0.85rem;margin-bottom:20px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#f87171;"
+         th:text="${error}"></div>
+    <div th:if="${success}" class="alert alert-success"
+         style="padding:12px 20px;border-radius:8px;font-size:0.85rem;margin-bottom:20px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#34d399;"
+         th:text="${success}"></div>
+
     <div class="panel">
         <div class="panel-header">Player Stats</div>
         <div class="panel-body" style="padding: 20px;">
@@ -24,11 +31,11 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="kills">Kills</label>
-                        <input type="number" id="kills" name="kills" th:value="${stats.kills}" min="0">
+                        <input type="number" id="kills" name="kills" th:value="${stats.kills}" min="0" step="any">
                     </div>
                     <div class="form-group">
                         <label for="deaths">Deaths</label>
-                        <input type="number" id="deaths" name="deaths" th:value="${stats.deaths}" min="0">
+                        <input type="number" id="deaths" name="deaths" th:value="${stats.deaths}" min="0" step="any">
                     </div>
                     <div class="form-group">
                         <label for="damageDealt">Damage Dealt</label>
@@ -40,47 +47,47 @@
                     </div>
                     <div class="form-group">
                         <label for="mobsKilled">Mobs Killed</label>
-                        <input type="number" id="mobsKilled" name="mobsKilled" th:value="${stats.mobsKilled}" min="0">
+                        <input type="number" id="mobsKilled" name="mobsKilled" th:value="${stats.mobsKilled}" min="0" step="any">
                     </div>
                     <div class="form-group">
                         <label for="blocksPlaced">Blocks Placed</label>
-                        <input type="number" id="blocksPlaced" name="blocksPlaced" th:value="${stats.blocksPlaced}" min="0">
+                        <input type="number" id="blocksPlaced" name="blocksPlaced" th:value="${stats.blocksPlaced}" min="0" step="any">
                     </div>
                     <div class="form-group">
                         <label for="blocksMined">Blocks Mined</label>
-                        <input type="number" id="blocksMined" name="blocksMined" th:value="${stats.blocksMined}" min="0">
+                        <input type="number" id="blocksMined" name="blocksMined" th:value="${stats.blocksMined}" min="0" step="any">
                     </div>
                     <div class="form-group">
                         <label for="itemsCrafted">Items Crafted</label>
-                        <input type="number" id="itemsCrafted" name="itemsCrafted" th:value="${stats.itemsCrafted}" min="0">
+                        <input type="number" id="itemsCrafted" name="itemsCrafted" th:value="${stats.itemsCrafted}" min="0" step="any">
                     </div>
                     <div class="form-group">
                         <label for="distanceWalked">Distance Walked</label>
-                        <input type="number" id="distanceWalked" name="distanceWalked" th:value="${stats.distanceWalked}" min="0">
+                        <input type="number" id="distanceWalked" name="distanceWalked" th:value="${stats.distanceWalked}" min="0" step="any">
                     </div>
                     <div class="form-group">
                         <label for="distanceSwum">Distance Swum</label>
-                        <input type="number" id="distanceSwum" name="distanceSwum" th:value="${stats.distanceSwum}" min="0">
+                        <input type="number" id="distanceSwum" name="distanceSwum" th:value="${stats.distanceSwum}" min="0" step="any">
                     </div>
                     <div class="form-group">
                         <label for="distanceFlown">Distance Flown</label>
-                        <input type="number" id="distanceFlown" name="distanceFlown" th:value="${stats.distanceFlown}" min="0">
+                        <input type="number" id="distanceFlown" name="distanceFlown" th:value="${stats.distanceFlown}" min="0" step="any">
                     </div>
                     <div class="form-group">
                         <label for="distanceSailed">Distance Sailed</label>
-                        <input type="number" id="distanceSailed" name="distanceSailed" th:value="${stats.distanceSailed}" min="0">
+                        <input type="number" id="distanceSailed" name="distanceSailed" th:value="${stats.distanceSailed}" min="0" step="any">
                     </div>
                     <div class="form-group">
                         <label for="shotsFired">Shots Fired</label>
-                        <input type="number" id="shotsFired" name="shotsFired" th:value="${stats.shotsFired}" min="0">
+                        <input type="number" id="shotsFired" name="shotsFired" th:value="${stats.shotsFired}" min="0" step="any">
                     </div>
                     <div class="form-group">
                         <label for="shotsHit">Shots Hit</label>
-                        <input type="number" id="shotsHit" name="shotsHit" th:value="${stats.shotsHit}" min="0">
+                        <input type="number" id="shotsHit" name="shotsHit" th:value="${stats.shotsHit}" min="0" step="any">
                     </div>
                     <div class="form-group">
                         <label for="longestShotBlocks">Longest Shot (blocks)</label>
-                        <input type="number" id="longestShotBlocks" name="longestShotBlocks" th:value="${stats.longestShotBlocks}" min="0">
+                        <input type="number" id="longestShotBlocks" name="longestShotBlocks" th:value="${stats.longestShotBlocks}" min="0" step="any">
                     </div>
                 </div>
 
@@ -88,6 +95,22 @@
                     <button type="submit" class="btn-primary">Save Stats</button>
                     <a th:href="@{/admin/players}" class="btn-secondary">Cancel</a>
                 </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="panel" style="margin-top:32px;border-color:rgba(239,68,68,0.3);">
+        <div class="panel-header" style="color:#f87171;">Danger Zone</div>
+        <div class="panel-body" style="padding:20px;">
+            <p style="font-size:0.85rem;color:#a3a3a3;margin-bottom:16px;">
+                Deleting this player will permanently remove their stats, achievements, chat messages and PvP history. This action cannot be undone.
+            </p>
+            <form th:action="@{/admin/players/{id}/delete(id=${player.id})}" method="post"
+                  th:attr="onsubmit=|return confirm('¿Seguro que querés eliminar al jugador ${player.username}? Esta acción no se puede deshacer.');|">
+                <button type="submit" class="btn-secondary"
+                        style="border-color:#ef4444;color:#f87171;">
+                    Delete Player
+                </button>
             </form>
         </div>
     </div>
