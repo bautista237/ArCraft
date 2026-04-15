@@ -123,8 +123,12 @@ public class ClanController {
                               @RequestParam String content,
                               Principal principal,
                               RedirectAttributes redirectAttributes) {
-        Clan clan = clanService.findByTag(tag)
-                .orElseThrow(() -> new RuntimeException("Clan not found: " + tag));
+        Optional<Clan> clanOpt = clanService.findByTag(tag);
+        if (clanOpt.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Clan no longer exists.");
+            return "redirect:/clans";
+        }
+        Clan clan = clanOpt.get();
         Player player = playerRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("Player not found"));
 
@@ -144,8 +148,12 @@ public class ClanController {
     public String joinClan(@PathVariable String tag,
                            Principal principal,
                            RedirectAttributes redirectAttributes) {
-        Clan clan = clanService.findByTag(tag)
-                .orElseThrow(() -> new RuntimeException("Clan not found: " + tag));
+        Optional<Clan> clanOpt = clanService.findByTag(tag);
+        if (clanOpt.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Clan no longer exists.");
+            return "redirect:/clans";
+        }
+        Clan clan = clanOpt.get();
         Player player = playerRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("Player not found"));
 
@@ -163,8 +171,12 @@ public class ClanController {
     public String leaveClan(@PathVariable String tag,
                             Principal principal,
                             RedirectAttributes redirectAttributes) {
-        Clan clan = clanService.findByTag(tag)
-                .orElseThrow(() -> new RuntimeException("Clan not found: " + tag));
+        Optional<Clan> clanOpt = clanService.findByTag(tag);
+        if (clanOpt.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Clan no longer exists.");
+            return "redirect:/clans";
+        }
+        Clan clan = clanOpt.get();
         Player player = playerRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("Player not found"));
 
@@ -182,8 +194,12 @@ public class ClanController {
                              @RequestParam String username,
                              Principal principal,
                              RedirectAttributes redirectAttributes) {
-        Clan clan = clanService.findByTag(tag)
-                .orElseThrow(() -> new RuntimeException("Clan not found: " + tag));
+        Optional<Clan> clanOpt = clanService.findByTag(tag);
+        if (clanOpt.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Clan no longer exists.");
+            return "redirect:/clans";
+        }
+        Clan clan = clanOpt.get();
         Player leader = playerRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("Player not found"));
         Player target = playerRepository.findByUsername(username)
