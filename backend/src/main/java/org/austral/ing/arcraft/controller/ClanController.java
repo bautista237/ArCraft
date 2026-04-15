@@ -47,9 +47,14 @@ public class ClanController {
     }
 
     @GetMapping("/clans/{tag}")
-    public String clanProfile(@PathVariable String tag, Model model, Principal principal) {
-        Clan clan = clanService.findByTag(tag)
-                .orElseThrow(() -> new RuntimeException("Clan not found: " + tag));
+    public String clanProfile(@PathVariable String tag, Model model, Principal principal,
+                              RedirectAttributes redirectAttributes) {
+        Optional<Clan> clanOpt = clanService.findByTag(tag);
+        if (clanOpt.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Clan no longer exists.");
+            return "redirect:/clans";
+        }
+        Clan clan = clanOpt.get();
 
         List<Player> members = clanService.getMembers(clan);
         long[] agg = clanService.getAggregateStats(members);
