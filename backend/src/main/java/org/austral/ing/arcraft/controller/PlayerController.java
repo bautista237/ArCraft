@@ -9,6 +9,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.Optional;
 
 @Controller
 @RequiredArgsConstructor
@@ -17,9 +20,15 @@ public class PlayerController {
     private final PlayerProfileService profileService;
 
     @GetMapping("/players/{username}")
-    public String playerProfile(@PathVariable String username, Model model) {
-        Player player = profileService.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Player not found: " + username));
+    public String playerProfile(@PathVariable String username, Model model,
+                                RedirectAttributes redirectAttributes) {
+        Optional<Player> playerOpt = profileService.findByUsername(username);
+        if (playerOpt.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error",
+                    "Player '" + username + "' no longer exists. They may have been removed by an admin.");
+            return "redirect:/rankings";
+        }
+        Player player = playerOpt.get();
 
         PlayerStats stats = profileService.getStats(player).orElse(null);
 

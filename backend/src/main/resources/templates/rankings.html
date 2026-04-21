@@ -16,6 +16,8 @@
     <main class="page-content">
         <h2 class="page-title">Player Rankings</h2>
 
+        <div class="alert alert-error" th:if="${error}" th:text="${error}"></div>
+
         <div class="panel">
             <div class="panel-body rankings-table-wrapper">
                 <table class="data-table">
