@@ -140,6 +140,9 @@
         <div class="alert alert-info" th:if="${param.logout}">
             You have been logged out.
         </div>
+        <div class="alert alert-error" th:if="${param.deleted}">
+            Your account has been deleted by an administrator.
+        </div>
 
         <form th:action="@{/login}" method="post">
             <div class="form-group">
