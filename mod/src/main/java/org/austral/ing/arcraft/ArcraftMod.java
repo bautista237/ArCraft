@@ -15,32 +15,19 @@ public class ArcraftMod {
     public static final String MODID = "arcraft";
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    private Thread springThread;
-
     public ArcraftMod(IEventBus modEventBus, ModContainer modContainer) {
         NeoForge.EVENT_BUS.register(this);
     }
 
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {
-        LOGGER.info("[ArCraft] Server starting — initializing database and Spring context");
+        LOGGER.info("[ArCraft] Server starting — initializing database");
         DatabaseManager.init();
-
-        springThread = new Thread(() -> {
-            try {
-                ArcraftSpringApp.start();
-            } catch (Throwable t) {
-                LOGGER.error("[ArCraft] Spring Boot failed to start", t);
-            }
-        }, "ArCraft-Spring");
-        springThread.setDaemon(true);
-        springThread.start();
     }
 
     @SubscribeEvent
     public void onServerStopping(ServerStoppingEvent event) {
-        LOGGER.info("[ArCraft] Server stopping — shutting down Spring and database");
-        ArcraftSpringApp.stop();
+        LOGGER.info("[ArCraft] Server stopping — closing database");
         DatabaseManager.close();
     }
 }

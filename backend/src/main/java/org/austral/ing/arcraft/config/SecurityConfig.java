@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.austral.ing.arcraft.repository.PlayerRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -13,7 +12,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.util.List;
 
@@ -23,7 +21,6 @@ import java.util.List;
 public class SecurityConfig {
 
     private final PlayerRepository playerRepository;
-    private final PlayerExistsFilter playerExistsFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -42,23 +39,16 @@ public class SecurityConfig {
     }
 
     @Bean
-    public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService());
-        provider.setPasswordEncoder(passwordEncoder());
-        return provider;
-    }
-
-    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .addFilterBefore(playerExistsFilter, UsernamePasswordAuthenticationFilter.class)
-            .authenticationProvider(authenticationProvider())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/login", "/css/**", "/js/**", "/images/**").permitAll()
+                .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
+            .headers(headers -> headers.frameOptions(frame -> frame.disable()))
+            .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
             .formLogin(form -> form
                 .loginPage("/login")
                 .defaultSuccessUrl("/dashboard", true)

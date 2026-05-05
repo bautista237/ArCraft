@@ -60,20 +60,14 @@ configurations {
 dependencies {
     implementation "net.neoforged:neoforge:${neo_version}"
 
-    // H2 — bundled into the mod jar via jarJar so the mod can connect to
-    // the same on-disk H2 file the Spring Boot backend uses.
+    // H2 — bundled via jarJar; both the mod and the backend connect to the same
+    // H2 file via AUTO_SERVER=TRUE (two separate processes).
     jarJar(implementation("com.h2database:h2")) {
         version { strictly '[2.2.224,3.0)'; prefer '2.2.224' }
     }
 
-    // Spring Boot — present at compile/run for embedding the web app inside
-    // the mod. Not jarJar'd; the backend module is expected to provide these
-    // at runtime when bundled for production.
-    implementation "org.springframework.boot:spring-boot-starter-web:3.3.0"
-    implementation "org.springframework.boot:spring-boot-starter-data-jpa:3.3.0"
-    implementation "org.springframework.boot:spring-boot-starter-security:3.3.0"
-    implementation "org.springframework.boot:spring-boot-starter-thymeleaf:3.3.0"
-    implementation "org.thymeleaf.extras:thymeleaf-extras-springsecurity6:3.1.2.RELEASE"
+    // jBCrypt — bundled via jarJar for in-game password hashing commands.
+    jarJar(implementation("org.mindrot:jbcrypt:0.4"))
 }
 
 tasks.withType(ProcessResources).configureEach {

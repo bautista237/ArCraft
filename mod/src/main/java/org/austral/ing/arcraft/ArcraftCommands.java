@@ -11,8 +11,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import org.mindrot.jbcrypt.BCrypt;
 import org.slf4j.Logger;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -21,29 +21,27 @@ import java.sql.ResultSet;
 @EventBusSubscriber(modid = ArcraftMod.MODID, bus = EventBusSubscriber.Bus.GAME)
 public final class ArcraftCommands {
     private static final Logger LOGGER = LogUtils.getLogger();
-    private static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
 
     private ArcraftCommands() {}
 
     @SubscribeEvent
     public static void onRegisterCommands(RegisterCommandsEvent event) {
         event.getDispatcher().register(
-                Commands.literal("arcraft")
-                        .then(Commands.literal("set")
-                                .then(Commands.literal("password")
-                                        .then(Commands.argument("password", StringArgumentType.word())
-                                                .executes(ArcraftCommands::setPassword))))
-                        .then(Commands.literal("get")
-                                .then(Commands.literal("password")
-                                        .executes(ArcraftCommands::getPassword)))
+                Commands.literal("login")
+                        .then(Commands.argument("password", StringArgumentType.word())
+                                .executes(ArcraftCommands::login))
+        );
+        event.getDispatcher().register(
+                Commands.literal("retrieve")
+                        .executes(ArcraftCommands::retrieve)
         );
     }
 
-    private static int setPassword(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+    private static int login(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
         final String username = player.getName().getString();
         final String plain = StringArgumentType.getString(ctx, "password");
-        final String hash = ENCODER.encode(plain);
+        final String hash = BCrypt.hashpw(plain, BCrypt.gensalt());
 
         DatabaseManager.submit(() -> {
             Connection c = DatabaseManager.getConnection();
@@ -54,19 +52,20 @@ public final class ArcraftCommands {
                 ps.setString(3, username);
                 int rows = ps.executeUpdate();
                 if (rows == 0) {
-                    LOGGER.warn("[ArCraft] set password: no player row for {}", username);
+                    LOGGER.warn("[ArCraft] /login: no player row for {}", username);
                 }
             } catch (Exception e) {
-                LOGGER.error("[ArCraft] set password failed for {}", username, e);
+                LOGGER.error("[ArCraft] /login failed for {}", username, e);
             }
         });
 
-        ctx.getSource().sendSuccess(() -> Component.literal("§a[ArCraft] Password updated."), false);
+        ctx.getSource().sendSuccess(() -> Component.literal("✔ Password set. Use /retrieve to view it."), false);
         return 1;
     }
 
-    private static int getPassword(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+    private static int retrieve(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
+        final CommandSourceStack source = ctx.getSource();
         final String username = player.getName().getString();
 
         DatabaseManager.submit(() -> {
@@ -79,13 +78,13 @@ public final class ArcraftCommands {
                     if (rs.next()) stored = rs.getString(1);
                 }
             } catch (Exception e) {
-                LOGGER.error("[ArCraft] get password failed for {}", username, e);
+                LOGGER.error("[ArCraft] /retrieve failed for {}", username, e);
             }
 
             final String message = (stored == null || stored.isEmpty())
-                    ? "§e[ArCraft] No password set. Use /arcraft set password <password>."
-                    : "§a[ArCraft] Your password: §f" + stored;
-            player.server.execute(() -> player.sendSystemMessage(Component.literal(message)));
+                    ? "No password set. Use /login <password> first."
+                    : stored;
+            player.server.execute(() -> source.sendSuccess(() -> Component.literal(message), false));
         });
 
         return 1;
