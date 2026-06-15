@@ -11,7 +11,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
-import org.mindrot.jbcrypt.BCrypt;
 import org.slf4j.Logger;
 
 import java.sql.Connection;
@@ -23,6 +22,33 @@ public final class ArcraftCommands {
     private static final Logger LOGGER = LogUtils.getLogger();
 
     private ArcraftCommands() {}
+
+    /**
+     * BCrypt-hashes a password. jBCrypt is bundled as a library jar which, under
+     * NeoForge's modular classloading in dev, is loaded by a different classloader than
+     * the mod — so a direct BCrypt.hashpw(...) reference throws NoClassDefFoundError.
+     * We resolve the class via a reachable classloader and invoke it reflectively, which
+     * works both in dev and in a production (bundled) jar. The output is a standard
+     * BCrypt hash, verifiable by Spring Security's BCryptPasswordEncoder on the web side.
+     */
+    static String hashPassword(String plain) {
+        ClassLoader[] candidates = {
+                Thread.currentThread().getContextClassLoader(),
+                ArcraftCommands.class.getClassLoader(),
+                ClassLoader.getSystemClassLoader()
+        };
+        for (ClassLoader cl : candidates) {
+            if (cl == null) continue;
+            try {
+                Class<?> bcrypt = Class.forName("org.mindrot.jbcrypt.BCrypt", true, cl);
+                Object salt = bcrypt.getMethod("gensalt").invoke(null);
+                return (String) bcrypt.getMethod("hashpw", String.class, String.class).invoke(null, plain, salt);
+            } catch (Throwable ignored) {
+                // try the next classloader
+            }
+        }
+        throw new IllegalStateException("jBCrypt not found on any reachable classloader");
+    }
 
     @SubscribeEvent
     public static void onRegisterCommands(RegisterCommandsEvent event) {
@@ -41,7 +67,7 @@ public final class ArcraftCommands {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
         final String username = player.getName().getString();
         final String plain = StringArgumentType.getString(ctx, "password");
-        final String hash = BCrypt.hashpw(plain, BCrypt.gensalt());
+        final String hash = hashPassword(plain);
 
         DatabaseManager.submit(() -> {
             Connection c = DatabaseManager.getConnection();

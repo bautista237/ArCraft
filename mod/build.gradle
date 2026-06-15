@@ -1,7 +1,7 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
-    id 'net.neoforged.gradle.userdev' version '7.1.25'
+    id 'net.neoforged.gradle.userdev' version '7.1.37'
 }
 
 tasks.named('wrapper', Wrapper).configure {
@@ -19,6 +19,17 @@ sourceSets.main.resources {
 
 repositories {
     mavenCentral()
+    // Mojang libraries: required for Minecraft natives such as the macOS-only
+    // lwjgl-freetype "natives-macos-patch" artifact (not published to Maven Central).
+    maven {
+        name = 'Mojang'
+        url = 'https://libraries.minecraft.net/'
+    }
+    // NeoForged releases: NeoForge artifacts and related tooling.
+    maven {
+        name = 'NeoForged'
+        url = 'https://maven.neoforged.net/releases'
+    }
 }
 
 base {
@@ -31,6 +42,9 @@ runs {
     configureEach {
         systemProperty 'forge.logging.markers', 'REGISTRIES'
         systemProperty 'forge.logging.console.level', 'debug'
+        // Local dev: point the mod at the same shared H2 file the web backend uses,
+        // so players/stats created in-game show up on the dashboard and login works.
+        systemProperty 'arcraft.db.url', 'jdbc:h2:file:/Users/juanbautistatassello/ArCraft/arcraft-data;AUTO_SERVER=TRUE'
         workingDirectory project.layout.projectDirectory.dir('run').dir(name)
         modSource project.sourceSets.main
     }
@@ -60,14 +74,19 @@ configurations {
 dependencies {
     implementation "net.neoforged:neoforge:${neo_version}"
 
-    // H2 — bundled via jarJar; both the mod and the backend connect to the same
-    // H2 file via AUTO_SERVER=TRUE (two separate processes).
-    jarJar(implementation("com.h2database:h2")) {
+    // H2 driver + jBCrypt.
+    //  - implementation: puts them on the dev run classpath (AppClassLoader).
+    //  - jarJar: bundles them inside the production mod jar.
+    // Under NeoForge's modular classloading these libs are NOT visible to the mod's own
+    // classloader via direct references, so DatabaseManager and ArcraftCommands load them
+    // reflectively through a reachable classloader (works in dev and in the bundled jar).
+    // Both the mod and the backend connect to the same H2 file via AUTO_SERVER=TRUE.
+    implementation("com.h2database:h2:2.2.224")
+    jarJar("com.h2database:h2") {
         version { strictly '[2.2.224,3.0)'; prefer '2.2.224' }
     }
-
-    // jBCrypt — bundled via jarJar for in-game password hashing commands.
-    jarJar(implementation("org.mindrot:jbcrypt:0.4"))
+    implementation("org.mindrot:jbcrypt:0.4")
+    jarJar("org.mindrot:jbcrypt:0.4")
 }
 
 tasks.withType(ProcessResources).configureEach {

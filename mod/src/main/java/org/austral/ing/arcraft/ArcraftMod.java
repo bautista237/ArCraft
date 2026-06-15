@@ -21,13 +21,21 @@ public class ArcraftMod {
 
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {
-        LOGGER.info("[ArCraft] Server starting — initializing database");
+        LOGGER.info("========================================");
+        LOGGER.info("[ArCraft] Mod starting up");
+        LOGGER.info("[ArCraft] Mod ID    : {}", MODID);
+        LOGGER.info("[ArCraft] MC version: 1.21.1 (NeoForge)");
+        LOGGER.info("[ArCraft] Tracking  : joins, PvP, blocks, mobs, items, arrows, chunks");
+        LOGGER.info("[ArCraft] Initializing H2 database connection...");
         DatabaseManager.init();
+        LOGGER.info("[ArCraft] Ready — all event handlers active");
+        LOGGER.info("========================================");
     }
 
     @SubscribeEvent
     public void onServerStopping(ServerStoppingEvent event) {
-        LOGGER.info("[ArCraft] Server stopping — closing database");
+        LOGGER.info("[ArCraft] Server stopping — flushing DB writes and closing connection");
         DatabaseManager.close();
+        LOGGER.info("[ArCraft] Shutdown complete");
     }
 }

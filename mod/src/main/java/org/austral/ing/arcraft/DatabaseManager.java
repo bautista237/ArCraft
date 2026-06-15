@@ -13,7 +13,10 @@ import java.util.concurrent.TimeUnit;
 
 public final class DatabaseManager {
     private static final Logger LOGGER = LogUtils.getLogger();
-    private static final String JDBC_URL = "jdbc:h2:file:./arcraft-data;AUTO_SERVER=TRUE";
+    // Defaults to the server's working directory (production). Can be overridden for
+    // local development via -Darcraft.db.url=... (see mod/build.gradle runs block).
+    private static final String JDBC_URL = System.getProperty(
+            "arcraft.db.url", "jdbc:h2:file:./arcraft-data;AUTO_SERVER=TRUE");
     private static final String JDBC_USER = "sa";
     private static final String JDBC_PASS = "";
 
@@ -22,11 +25,49 @@ public final class DatabaseManager {
 
     private DatabaseManager() {}
 
+    /**
+     * Opens the H2 connection. Under NeoForge's modular classloading the mod class and
+     * its library jars end up on different classloaders, so DriverManager.getConnection
+     * (which only accepts drivers visible to the *calling* classloader) fails with
+     * "No suitable driver found" even though H2 is on the classpath. We first try the
+     * normal DriverManager path (works in a plain/production classloader), and fall back
+     * to instantiating the H2 driver via a reachable classloader and calling connect()
+     * directly, which bypasses DriverManager's classloader check.
+     */
+    private static Connection openConnection() throws SQLException {
+        try {
+            return DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASS);
+        } catch (SQLException primary) {
+            java.util.Properties props = new java.util.Properties();
+            props.setProperty("user", JDBC_USER);
+            props.setProperty("password", JDBC_PASS);
+            ClassLoader[] candidates = {
+                    Thread.currentThread().getContextClassLoader(),
+                    DatabaseManager.class.getClassLoader(),
+                    ClassLoader.getSystemClassLoader()
+            };
+            for (ClassLoader cl : candidates) {
+                if (cl == null) continue;
+                try {
+                    Class<?> driverClass = Class.forName("org.h2.Driver", true, cl);
+                    java.sql.Driver driver = (java.sql.Driver) driverClass.getDeclaredConstructor().newInstance();
+                    Connection c = driver.connect(JDBC_URL, props);
+                    if (c != null) {
+                        LOGGER.info("[ArCraft] H2 driver loaded via {}", cl);
+                        return c;
+                    }
+                } catch (Throwable ignored) {
+                    // try the next classloader
+                }
+            }
+            throw primary;
+        }
+    }
+
     public static synchronized void init() {
         if (connection != null) return;
         try {
-            Class.forName("org.h2.Driver");
-            connection = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASS);
+            connection = openConnection();
             connection.setAutoCommit(true);
             createSchema();
             writer = Executors.newSingleThreadExecutor(r -> {
@@ -201,6 +242,24 @@ public final class DatabaseManager {
                     id UUID PRIMARY KEY,
                     server_start_date TIMESTAMP,
                     server_name VARCHAR(255)
+                )
+                """);
+
+            st.execute("""
+                CREATE TABLE IF NOT EXISTS chunk_visit (
+                    id            VARCHAR(36) PRIMARY KEY,
+                    player_id     VARCHAR(36) NOT NULL,
+                    chunk_x       INT NOT NULL,
+                    chunk_z       INT NOT NULL,
+                    dimension     VARCHAR(64) NOT NULL DEFAULT 'minecraft:overworld',
+                    biome         VARCHAR(64),
+                    top_block     VARCHAR(64),
+                    map_color_r   INT DEFAULT 100,
+                    map_color_g   INT DEFAULT 140,
+                    map_color_b   INT DEFAULT 100,
+                    first_visited TIMESTAMP NOT NULL,
+                    last_visited  TIMESTAMP NOT NULL,
+                    UNIQUE (player_id, chunk_x, chunk_z, dimension)
                 )
                 """);
         }
