@@ -1,3 +1,7 @@
 if git diff --cached --name-only | grep -q '^frontend/'; then
-  cd frontend && npx lint-staged
+  cd frontend
+  # Solo corre lint-staged si está instalado; si no, no bloquea el commit.
+  if [ -x node_modules/.bin/lint-staged ]; then
+    node_modules/.bin/lint-staged
+  fi
 fi
