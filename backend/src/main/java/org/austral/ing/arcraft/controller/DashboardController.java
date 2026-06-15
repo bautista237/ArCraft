@@ -12,6 +12,11 @@ public class DashboardController {
 
     private final DashboardService dashboardService;
 
+    @GetMapping("/")
+    public String root() {
+        return "redirect:/dashboard";
+    }
+
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
         model.addAttribute("totalPlayers", dashboardService.getTotalPlayers());
