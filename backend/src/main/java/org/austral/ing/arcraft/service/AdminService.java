@@ -125,6 +125,8 @@ public class AdminService {
                 .setParameter("pid", playerId).executeUpdate();
         entityManager.createNativeQuery("DELETE FROM player_stats WHERE player_id = :pid")
                 .setParameter("pid", playerId).executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM chunk_visit WHERE player_id = :pidStr")
+                .setParameter("pidStr", playerId.toString()).executeUpdate();
 
         entityManager.flush();
         entityManager.clear();
@@ -241,4 +243,5 @@ public class AdminService {
         clanRepository.deleteById(clanId);
         return null;
     }
+
 }

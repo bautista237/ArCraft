@@ -3,13 +3,16 @@ package org.austral.ing.arcraft.controller;
 import lombok.RequiredArgsConstructor;
 import org.austral.ing.arcraft.entity.EventLog;
 import org.austral.ing.arcraft.service.AdminService;
+import org.austral.ing.arcraft.service.CleanupService;
 import org.springframework.beans.propertyeditors.CustomNumberEditor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.List;
 import java.util.UUID;
 
 @Controller
@@ -18,6 +21,7 @@ import java.util.UUID;
 public class AdminController {
 
     private final AdminService adminService;
+    private final CleanupService cleanupService;
 
     @InitBinder
     public void initBinder(WebDataBinder binder) {
@@ -197,5 +201,41 @@ public class AdminController {
     public String removeMember(@PathVariable UUID id, @RequestParam UUID playerId) {
         adminService.removeMemberFromClan(playerId);
         return "redirect:/admin/clans/" + id + "/edit";
+    }
+
+    // ── Cleanup ──────────────────────────────────────────────
+
+    private static final List<String> DEFAULT_CLEANUP_TARGETS = List.of("steve", "jeb", "dev");
+
+    @GetMapping("/cleanup")
+    public String cleanupPage(Model model) {
+        model.addAttribute("targets", DEFAULT_CLEANUP_TARGETS);
+        model.addAttribute("preview", cleanupService.previewDeletion(DEFAULT_CLEANUP_TARGETS));
+        return "admin/cleanup";
+    }
+
+    @PostMapping("/cleanup")
+    public String doCleanup(@RequestParam(defaultValue = "false") boolean confirm,
+                            Authentication auth,
+                            RedirectAttributes redirectAttributes) {
+        if (!confirm) {
+            redirectAttributes.addFlashAttribute("error", "You must check the confirmation box.");
+            return "redirect:/admin/cleanup";
+        }
+        var results = cleanupService.cleanupPlayers(DEFAULT_CLEANUP_TARGETS, auth.getName());
+        redirectAttributes.addFlashAttribute("cleanupResults", results);
+        redirectAttributes.addFlashAttribute("cleanupDone", true);
+        return "redirect:/admin/cleanup";
+    }
+
+    // ── Database Stats ────────────────────────────────────────
+
+    @GetMapping("/database-stats")
+    public String databaseStats(Model model) {
+        var players = adminService.getAllPlayers();
+        model.addAttribute("tableCounts", cleanupService.getTableCounts());
+        model.addAttribute("playerSummaries",
+                players.stream().map(cleanupService::getPlayerSummary).toList());
+        return "admin/database-stats";
     }
 }

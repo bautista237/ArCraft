@@ -30,6 +30,16 @@
             <div class="admin-card-title">Clans</div>
             <div class="admin-card-desc">Create, edit clans and manage members</div>
         </a>
+        <a th:href="@{/admin/database-stats}" class="admin-card">
+            <div class="admin-card-icon">&#x1F4CA;</div>
+            <div class="admin-card-title">DB Stats</div>
+            <div class="admin-card-desc">Row counts per table and player summaries</div>
+        </a>
+        <a th:href="@{/admin/cleanup}" class="admin-card">
+            <div class="admin-card-icon">&#x1F9F9;</div>
+            <div class="admin-card-title">Cleanup</div>
+            <div class="admin-card-desc">Delete test players (steve, jeb, dev)</div>
+        </a>
     </div>
 </main>
 

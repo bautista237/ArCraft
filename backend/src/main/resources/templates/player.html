@@ -21,6 +21,8 @@
                     <span th:if="${player.clan == null}" class="text-muted">No clan</span>
                     <span class="text-muted"> · Joined </span>
                     <span class="text-muted mono" th:text="${player.createdAt.atZone(T(java.time.ZoneId).systemDefault()).toLocalDate().toString()}">2026-01-01</span>
+                    <span class="text-muted"> · </span>
+                    <a class="btn-small" th:href="@{/map/player/{u}(u=${player.username})}">View Map</a>
                 </div>
             </div>
         </div>
