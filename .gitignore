@@ -9,4 +9,19 @@ CLAUDE.md
 backend/target/
 frontend/node_modules/
 frontend/dist/
+server/node_modules/
 ARCRAFT_INFO.md
+
+# OS files
+.DS_Store
+
+# H2 database (runtime data)
+*.mv.db
+*.lock.db
+
+# Minecraft server runtime (jars, logs, world, crash-reports)
+mc-server/
+
+# Generated context/analysis docs
+DIFERENCIAS_CODIGO_VS_REPOSITORIO.txt
+contexto_arcraft.txt

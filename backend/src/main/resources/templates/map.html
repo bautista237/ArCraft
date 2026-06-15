@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${isPersonal} ? ${player.username + ' — Map — ArCraft'} : 'World Map — ArCraft'">Map — ArCraft</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <style>
+        .map-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .map-title-group { flex: 1; }
+        .map-subtitle {
+            font-size: 0.8rem;
+            color: #737373;
+            margin-top: 4px;
+        }
+        .map-subtitle a { color: #a3a3a3; }
+        .map-subtitle a:hover { color: #10b981; }
+
+        .dim-tabs {
+            display: flex;
+            gap: 6px;
+            align-self: flex-end;
+        }
+        .dim-tabs a {
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #737373;
+            border: 1px solid #2a2a2a;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .dim-tabs a:hover { color: #e5e5e5; border-color: #444; }
+        .dim-tabs a.active {
+            background: rgba(16,185,129,0.1);
+            border-color: rgba(16,185,129,0.4);
+            color: #10b981;
+        }
+
+        .map-wrapper {
+            position: relative;
+            background: #111;
+            border: 1px solid #2a2a2a;
+            border-radius: 10px;
+            overflow: hidden;
+            height: 600px;
+        }
+        @media (max-width: 800px) { .map-wrapper { height: 380px; } }
+
+        #arcraftMap {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+        }
+        #arcraftMap:active { cursor: grabbing; }
+
+        #mapTooltip {
+            display: none;
+            position: absolute;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 6px;
+            padding: 8px 12px;
+            pointer-events: none;
+            z-index: 10;
+            min-width: 140px;
+        }
+        .tt-coord { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #e5e5e5; }
+        .tt-player { font-size: 0.75rem; color: #10b981; margin-top: 3px; }
+        .tt-biome { font-size: 0.7rem; color: #737373; margin-top: 2px; }
+        .tt-time { font-size: 0.68rem; color: #525252; margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+
+        .map-controls {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .map-ctrl-btn {
+            width: 28px;
+            height: 28px;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 5px;
+            color: #a3a3a3;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+            font-family: monospace;
+        }
+        .map-ctrl-btn:hover { background: #222; color: #e5e5e5; border-color: #444; }
+
+        .map-hint {
+            position: absolute;
+            bottom: 10px;
+            left: 12px;
+            font-size: 0.68rem;
+            color: #3a3a3a;
+            pointer-events: none;
+        }
+
+        .map-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 12px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            color: #737373;
+        }
+        .legend-swatch {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        .alert-map {
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.3);
+            color: #f87171;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="~{fragments/layout :: navbar('map')}"></div>
+
+    <main class="page-content">
+
+        <div class="alert-map" th:if="${error}" th:text="${error}"></div>
+
+        <!-- Header -->
+        <div class="map-header">
+            <div class="map-title-group">
+                <h2 class="page-title" style="margin-bottom: 0;"
+                    th:text="${isPersonal} ? ${player.username + ' — Exploration Map'} : 'World Map'">World Map</h2>
+                <p class="map-subtitle" th:if="${isPersonal}">
+                    <span th:text="${chunksExplored + ' chunks explored in this dimension'}">0 chunks</span>
+                    &nbsp;·&nbsp;<a th:href="@{/map}">View global map</a>
+                    &nbsp;·&nbsp;<a th:href="@{/players/{u}(u=${player.username})}" th:text="${player.username}">player</a>
+                </p>
+                <p class="map-subtitle" th:unless="${isPersonal}">
+                    All players · Scroll to zoom · Drag to pan · Double-click to reset
+                </p>
+            </div>
+
+            <!-- Dimension tabs -->
+            <div class="dim-tabs">
+                <a th:href="${(isPersonal ? '/map/player/' + player.username : '/map') + '?dimension=minecraft:overworld'}"
+                   th:classappend="${currentDimension == 'minecraft:overworld'} ? ' active'">Overworld</a>
+                <a th:href="${(isPersonal ? '/map/player/' + player.username : '/map') + '?dimension=minecraft:the_nether'}"
+                   th:classappend="${currentDimension == 'minecraft:the_nether'} ? ' active'">Nether</a>
+                <a th:href="${(isPersonal ? '/map/player/' + player.username : '/map') + '?dimension=minecraft:the_end'}"
+                   th:classappend="${currentDimension == 'minecraft:the_end'} ? ' active'">The End</a>
+            </div>
+        </div>
+
+        <!-- Canvas container -->
+        <div class="map-wrapper">
+            <canvas id="arcraftMap"></canvas>
+
+            <!-- Zoom controls -->
+            <div class="map-controls">
+                <button class="map-ctrl-btn" id="btnZoomIn"  title="Zoom in">+</button>
+                <button class="map-ctrl-btn" id="btnZoomOut" title="Zoom out">−</button>
+                <button class="map-ctrl-btn" id="btnReset"   title="Reset view">⊙</button>
+            </div>
+
+            <!-- Tooltip -->
+            <div id="mapTooltip"></div>
+
+            <div class="map-hint">Scroll to zoom · Drag to pan · Double-click to reset</div>
+        </div>
+
+        <!-- Legend -->
+        <div class="map-legend" style="margin-top: 14px;">
+            <div class="legend-item"><div class="legend-swatch" style="background:rgb(106,127,75)"></div>Grass</div>
+            <div class="legend-item"><div class="legend-swatch" style="background:rgb(63,118,228)"></div>Water</div>
+            <div class="legend-item"><div class="legend-swatch" style="background:rgb(219,207,163)"></div>Sand / Beach</div>
+            <div class="legend-item"><div class="legend-swatch" style="background:rgb(125,125,125)"></div>Stone</div>
+            <div class="legend-item"><div class="legend-swatch" style="background:rgb(136,126,126)"></div>Gravel</div>
+            <div class="legend-item"><div class="legend-swatch" style="background:rgb(240,240,240)"></div>Snow</div>
+            <div class="legend-item"><div class="legend-swatch" style="background:rgb(160,205,255)"></div>Ice</div>
+            <div class="legend-item"><div class="legend-swatch" style="background:rgb(102,76,51)"></div>Wood / Logs</div>
+            <div class="legend-item"><div class="legend-swatch" style="background:rgb(84,109,54)"></div>Leaves</div>
+            <div class="legend-item"><div class="legend-swatch" style="background:rgb(110,50,50)"></div>Netherrack</div>
+            <div class="legend-item"><div class="legend-swatch" style="background:rgb(219,222,158)"></div>End Stone</div>
+            <div class="legend-item"><div class="legend-swatch" style="background:rgb(100,100,100)"></div>Other</div>
+        </div>
+
+    </main>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const IS_PERSONAL = /*[[${isPersonal}]]*/ false;
+        const USERNAME    = /*[[${player != null ? player.username : null}]]*/ null;
+        const DIMENSION   = /*[[${currentDimension}]]*/ 'minecraft:overworld';
+        /*]]>*/
+
+        const canvas  = document.getElementById('arcraftMap');
+        const ctx     = canvas.getContext('2d');
+        const tooltip = document.getElementById('mapTooltip');
+
+        // ── State ────────────────────────────────────────────────────
+        let chunks   = [];
+        let chunkMap = new Map(); // "x,z" → chunk object
+        let scale    = 1;
+        let panX     = 0, panY = 0;
+        let cellSize = 8;
+        let minX = 0, maxX = 0, minZ = 0, maxZ = 0;
+
+        // ── Compute bounds and initial pan ───────────────────────────
+        function computeBounds() {
+            if (chunks.length === 0) return;
+            minX = Math.min(...chunks.map(c => c.chunkX)) - 2;
+            maxX = Math.max(...chunks.map(c => c.chunkX)) + 2;
+            minZ = Math.min(...chunks.map(c => c.chunkZ)) - 2;
+            maxZ = Math.max(...chunks.map(c => c.chunkZ)) + 2;
+
+            const totalW = maxX - minX + 1;
+            const totalH = maxZ - minZ + 1;
+            cellSize = Math.max(2, Math.floor(Math.min(canvas.width / totalW, canvas.height / totalH)));
+
+            const mapW = totalW * cellSize;
+            const mapH = totalH * cellSize;
+            panX = (canvas.width  - mapW) / 2;
+            panY = (canvas.height - mapH) / 2;
+            scale = 1;
+        }
+
+        // ── Draw ─────────────────────────────────────────────────────
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (chunks.length === 0) {
+                ctx.fillStyle = '#3a3a3a';
+                ctx.font = '14px Inter, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('No chunks explored yet in this dimension.', canvas.width / 2, canvas.height / 2);
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'alphabetic';
+                return;
+            }
+
+            ctx.save();
+            ctx.translate(panX, panY);
+            ctx.scale(scale, scale);
+
+            for (const c of chunks) {
+                const px = (c.chunkX - minX) * cellSize;
+                const pz = (c.chunkZ - minZ) * cellSize;
+                ctx.fillStyle = `rgb(${c.r},${c.g},${c.b})`;
+                ctx.fillRect(px, pz, cellSize, cellSize);
+            }
+
+            // Grid lines when zoomed in enough
+            if (cellSize * scale >= 5) {
+                ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+                ctx.lineWidth = 0.5 / scale;
+                const totalW = maxX - minX + 1;
+                const totalH = maxZ - minZ + 1;
+                ctx.beginPath();
+                for (let x = 0; x <= totalW; x++) {
+                    ctx.moveTo(x * cellSize, 0);
+                    ctx.lineTo(x * cellSize, totalH * cellSize);
+                }
+                for (let z = 0; z <= totalH; z++) {
+                    ctx.moveTo(0, z * cellSize);
+                    ctx.lineTo(totalW * cellSize, z * cellSize);
+                }
+                ctx.stroke();
+            }
+
+            ctx.restore();
+        }
+
+        // ── Pan ──────────────────────────────────────────────────────
+        let isDragging = false;
+        let dragStartX = 0, dragStartY = 0;
+
+        canvas.addEventListener('mousedown', e => {
+            isDragging = true;
+            dragStartX = e.clientX - panX;
+            dragStartY = e.clientY - panY;
+        });
+
+        window.addEventListener('mouseup', () => { isDragging = false; });
+
+        canvas.addEventListener('mousemove', e => {
+            if (isDragging) {
+                panX = e.clientX - dragStartX;
+                panY = e.clientY - dragStartY;
+                draw();
+            }
+            showTooltip(e);
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            isDragging = false;
+            tooltip.style.display = 'none';
+        });
+
+        // ── Zoom ─────────────────────────────────────────────────────
+        function applyZoom(factor, originX, originY) {
+            const newScale = Math.min(8, Math.max(0.5, scale * factor));
+            panX = originX - (originX - panX) * (newScale / scale);
+            panY = originY - (originY - panY) * (newScale / scale);
+            scale = newScale;
+            draw();
+        }
+
+        canvas.addEventListener('wheel', e => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            applyZoom(e.deltaY < 0 ? 1.25 : 0.8, e.clientX - rect.left, e.clientY - rect.top);
+        }, { passive: false });
+
+        // ── Control buttons ──────────────────────────────────────────
+        document.getElementById('btnZoomIn').addEventListener('click', () => {
+            applyZoom(1.5, canvas.width / 2, canvas.height / 2);
+        });
+        document.getElementById('btnZoomOut').addEventListener('click', () => {
+            applyZoom(0.67, canvas.width / 2, canvas.height / 2);
+        });
+        document.getElementById('btnReset').addEventListener('click', resetView);
+
+        canvas.addEventListener('dblclick', resetView);
+
+        function resetView() {
+            computeBounds();
+            draw();
+        }
+
+        // ── Tooltip ──────────────────────────────────────────────────
+        function showTooltip(e) {
+            if (chunks.length === 0) { tooltip.style.display = 'none'; return; }
+            const rect = canvas.getBoundingClientRect();
+            const worldX = (e.clientX - rect.left  - panX) / scale;
+            const worldZ = (e.clientY - rect.top   - panY) / scale;
+            const hx = Math.floor(worldX / cellSize) + minX;
+            const hz = Math.floor(worldZ / cellSize) + minZ;
+            const found = chunkMap.get(hx + ',' + hz);
+
+            if (found) {
+                let html = `<div class="tt-coord">Chunk (${found.chunkX}, ${found.chunkZ})</div>`;
+                if (IS_PERSONAL || !found.playerUsername) {
+                    // no per-chunk player name needed on personal map
+                } else {
+                    html += `<div class="tt-player">${found.playerUsername}</div>`;
+                }
+                if (found.lastVisited) {
+                    html += `<div class="tt-time">${found.lastVisited}</div>`;
+                }
+                tooltip.innerHTML = html;
+                tooltip.style.display = 'block';
+
+                // Keep tooltip inside canvas
+                const tx = e.clientX - rect.left + 14;
+                const ty = e.clientY - rect.top  + 14;
+                tooltip.style.left = (tx + tooltip.offsetWidth > canvas.width  ? tx - tooltip.offsetWidth - 20 : tx) + 'px';
+                tooltip.style.top  = (ty + tooltip.offsetHeight > canvas.height ? ty - tooltip.offsetHeight - 20 : ty) + 'px';
+            } else {
+                tooltip.style.display = 'none';
+            }
+        }
+
+        // ── Canvas resize ─────────────────────────────────────────────
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width  = wrapper.clientWidth;
+            canvas.height = wrapper.clientHeight;
+            computeBounds();
+            draw();
+        }
+
+        window.addEventListener('resize', () => { resizeCanvas(); });
+
+        // ── Load data ────────────────────────────────────────────────
+        async function loadMap() {
+            let url = '/map/data?dimension=' + encodeURIComponent(DIMENSION);
+            if (USERNAME) url += '&username=' + encodeURIComponent(USERNAME);
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                chunks = data;
+                chunkMap.clear();
+                for (const c of chunks) {
+                    chunkMap.set(c.chunkX + ',' + c.chunkZ, c);
+                }
+                resizeCanvas();
+            } catch (err) {
+                console.error('Failed to load map data:', err);
+                resizeCanvas();
+            }
+        }
+
+        loadMap();
+    </script>
+</body>
+</html>
