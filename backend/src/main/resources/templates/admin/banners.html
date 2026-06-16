@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events — Admin — ArCraft</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<header th:replace="~{fragments/layout :: navbar('admin')}"></header>
+
+<main class="page-content">
+    <h1 class="page-title">Event Banners</h1>
+
+    <div th:if="${error}" class="alert alert-error"
+         style="padding:12px 20px;border-radius:8px;font-size:0.85rem;margin-bottom:20px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#f87171;"
+         th:text="${error}"></div>
+    <div th:if="${success}" class="alert alert-success"
+         style="padding:12px 20px;border-radius:8px;font-size:0.85rem;margin-bottom:20px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#34d399;"
+         th:text="${success}"></div>
+
+    <!-- New event form -->
+    <div class="panel" style="margin-bottom: 32px;">
+        <div class="panel-header">Create Event</div>
+        <div class="panel-body" style="padding: 20px;">
+            <form th:action="@{/admin/banners}" method="post" class="admin-form">
+                <div class="form-row">
+                    <div class="form-group" style="flex:2;">
+                        <label for="title">Title</label>
+                        <input type="text" id="title" name="title" required placeholder="e.g. Build Competition">
+                    </div>
+                    <div class="form-group" style="flex:3;">
+                        <label for="description">Description</label>
+                        <input type="text" id="description" name="description" placeholder="Details shown in the banner">
+                    </div>
+                </div>
+                <div class="form-row" style="margin-top:16px;">
+                    <div class="form-group">
+                        <label for="startDate">Starts</label>
+                        <input type="datetime-local" id="startDate" name="startDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="endDate">Ends</label>
+                        <input type="datetime-local" id="endDate" name="endDate" required>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn-primary">Create Event</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Events table -->
+    <div class="panel">
+        <div class="panel-header">All Events</div>
+        <div class="panel-body">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Description</th>
+                        <th>Starts</th>
+                        <th>Ends</th>
+                        <th class="text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="ev : ${events}">
+                        <td th:text="${ev.title}">Title</td>
+                        <td class="text-muted" th:text="${ev.description}">desc</td>
+                        <td class="mono text-muted" th:text="${#temporals.format(ev.startDate, 'yyyy-MM-dd HH:mm')}"></td>
+                        <td class="mono text-muted" th:text="${#temporals.format(ev.endDate, 'yyyy-MM-dd HH:mm')}"></td>
+                        <td class="text-right">
+                            <form th:action="@{/admin/banners/{id}/delete(id=${ev.id})}" method="post" style="display:inline;"
+                                  onsubmit="return confirm('Delete this event?');">
+                                <button type="submit" class="btn-small btn-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(events)}">
+                        <td colspan="5" class="empty-state">No events yet.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>

@@ -2,6 +2,8 @@ package org.austral.ing.arcraft.repository;
 
 import org.austral.ing.arcraft.entity.Player;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import org.austral.ing.arcraft.entity.Clan;
 
@@ -14,4 +16,8 @@ public interface PlayerRepository extends JpaRepository<Player, UUID> {
     boolean existsByUsername(String username);
     List<Player> findByClan(Clan clan);
     long countByClan(Clan clan);
+    List<Player> findByEmailIsNotNull();
+
+    @Query("select p.clan.tag from Player p where p.username = :username")
+    Optional<String> findClanTagByUsername(@Param("username") String username);
 }

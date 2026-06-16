@@ -35,6 +35,10 @@
                         <label for="password">Password</label>
                         <input type="password" id="password" name="password" required>
                     </div>
+                    <div class="form-group">
+                        <label for="email">Email (optional)</label>
+                        <input type="text" id="email" name="email" placeholder="for event reminders">
+                    </div>
                     <div class="form-group form-check-group">
                         <label class="check-label">
                             <input type="checkbox" name="isAdmin" value="true">
@@ -66,8 +70,7 @@
                 <tbody>
                     <tr th:each="player : ${players}">
                         <td>
-                            <a th:href="@{/players/{u}(u=${player.username})}" class="player-link"
-                               th:text="${player.username}">Steve</a>
+                            <span th:replace="~{fragments/layout :: playerCell(${player}, null)}"></span>
                         </td>
                         <td>
                             <span th:if="${player.admin}" class="badge badge-green">Yes</span>

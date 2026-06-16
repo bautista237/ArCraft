@@ -20,10 +20,13 @@ public class PlayerStats {
     @JoinColumn(name = "player_id", nullable = false, unique = true)
     private Player player;
 
-    private long kills = 0;
-    private long deaths = 0;
-    private float damageDealt = 0;
-    private float damageReceived = 0;
+    private long kills = 0;          // PvP kills
+    private long deaths = 0;          // total deaths (any cause)
+    private long pvpDeaths = 0;       // deaths caused by another player
+    private float damageDealt = 0;        // total damage dealt (any target)
+    private float damageReceived = 0;     // total damage taken (any source)
+    private float pvpDamageDealt = 0;     // damage dealt to other players
+    private float pvpDamageReceived = 0;  // damage taken from other players
     private long mobsKilled = 0;
     private long blocksPlaced = 0;
     private long blocksMined = 0;

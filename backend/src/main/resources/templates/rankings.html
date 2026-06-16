@@ -58,8 +58,7 @@
                         <tr th:each="s, iter : ${players}">
                             <td class="rank" th:text="${iter.index + 1}">1</td>
                             <td>
-                                <a class="player-link" th:href="@{/players/{u}(u=${s.player.username})}"
-                                   th:text="${s.player.username}">Steve</a>
+                                <span th:replace="~{fragments/layout :: playerCell(${s.player}, ${titles.get(s.player.username)})}"></span>
                             </td>
                             <td class="num text-right" th:text="${s.kills}">0</td>
                             <td class="num text-right" th:text="${s.deaths}">0</td>

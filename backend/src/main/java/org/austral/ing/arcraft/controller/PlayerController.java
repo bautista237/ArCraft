@@ -5,6 +5,7 @@ import org.austral.ing.arcraft.entity.Player;
 import org.austral.ing.arcraft.entity.PlayerStats;
 import org.austral.ing.arcraft.service.PlayerProfileService;
 import org.austral.ing.arcraft.service.RankingsService;
+import org.austral.ing.arcraft.service.TitleService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +19,7 @@ import java.util.Optional;
 public class PlayerController {
 
     private final PlayerProfileService profileService;
+    private final TitleService titleService;
 
     @GetMapping("/players/{username}")
     public String playerProfile(@PathVariable String username, Model model,
@@ -34,6 +36,7 @@ public class PlayerController {
 
         model.addAttribute("player", player);
         model.addAttribute("stats", stats);
+        model.addAttribute("titles", titleService.getTitles(player));
         model.addAttribute("kdRatio", stats != null ? RankingsService.computeKdRatio(stats) : 0);
         model.addAttribute("bowAccuracy", stats != null ? RankingsService.computeBowAccuracy(stats) : 0);
         model.addAttribute("totalDistance", stats != null ? RankingsService.computeTotalDistance(stats) : 0);

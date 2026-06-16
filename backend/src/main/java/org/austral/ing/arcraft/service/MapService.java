@@ -32,7 +32,9 @@ public class MapService {
             int chunkX, int chunkZ,
             int r, int g, int b,
             String playerUsername,
-            String lastVisited
+            String lastVisited,
+            long mined, long placed, long stay,
+            int surfaceY
     ) {}
 
     public MapData getPlayerMapData(Player player, String dimension) {
@@ -49,23 +51,32 @@ public class MapService {
 
     public GlobalMapData getGlobalMapData(String dimension) {
         List<ChunkVisit> all = chunkVisitRepository.findAllByDimension(dimension);
-        // For chunks visited by multiple players, keep the most recently visited entry
+        // Aggregate per coordinate: keep the most-recent terrain colour but SUM the heat
+        // counters across every player so the global heatmaps reflect server-wide activity.
         Map<String, ChunkVisit> latestByCoord = new LinkedHashMap<>();
+        Map<String, long[]> heatByCoord = new HashMap<>(); // [mined, placed, stay]
         for (ChunkVisit cv : all) {
             String key = cv.getChunkX() + "," + cv.getChunkZ();
             ChunkVisit existing = latestByCoord.get(key);
             if (existing == null || cv.getLastVisited().isAfter(existing.getLastVisited())) {
                 latestByCoord.put(key, cv);
             }
+            long[] heat = heatByCoord.computeIfAbsent(key, k -> new long[3]);
+            heat[0] += cv.getBlocksMined();
+            heat[1] += cv.getBlocksPlaced();
+            heat[2] += cv.getStayTicks();
         }
-        List<ChunkVisitDTO> dtos = latestByCoord.values().stream()
-                .map(cv -> new ChunkVisitDTO(
-                        cv.getChunkX(), cv.getChunkZ(),
-                        cv.getMapColorR(), cv.getMapColorG(), cv.getMapColorB(),
-                        cv.getPlayer().getUsername(),
-                        cv.getLastVisited().format(FMT)
-                ))
-                .toList();
+        List<ChunkVisitDTO> dtos = new ArrayList<>();
+        for (var entry : latestByCoord.entrySet()) {
+            ChunkVisit cv = entry.getValue();
+            long[] heat = heatByCoord.get(entry.getKey());
+            dtos.add(new ChunkVisitDTO(
+                    cv.getChunkX(), cv.getChunkZ(),
+                    cv.getMapColorR(), cv.getMapColorG(), cv.getMapColorB(),
+                    cv.getPlayer().getUsername(),
+                    cv.getLastVisited().format(FMT),
+                    heat[0], heat[1], heat[2], cv.getSurfaceY()));
+        }
         return new GlobalMapData(dtos);
     }
 
@@ -75,8 +86,8 @@ public class MapService {
                         cv.getChunkX(), cv.getChunkZ(),
                         cv.getMapColorR(), cv.getMapColorG(), cv.getMapColorB(),
                         cv.getPlayer().getUsername(),
-                        cv.getLastVisited().format(FMT)
-                ))
+                        cv.getLastVisited().format(FMT),
+                        cv.getBlocksMined(), cv.getBlocksPlaced(), cv.getStayTicks(), cv.getSurfaceY()))
                 .toList();
     }
 

@@ -1,6 +1,7 @@
 package org.austral.ing.arcraft;
 
 import com.mojang.logging.LogUtils;
+import net.minecraft.server.MinecraftServer;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
@@ -15,6 +16,9 @@ public class ArcraftMod {
     public static final String MODID = "arcraft";
     public static final Logger LOGGER = LogUtils.getLogger();
 
+    /** Live server handle — used to push clan-chat messages to online players. */
+    public static volatile MinecraftServer SERVER;
+
     public ArcraftMod(IEventBus modEventBus, ModContainer modContainer) {
         NeoForge.EVENT_BUS.register(this);
     }
@@ -27,15 +31,23 @@ public class ArcraftMod {
         LOGGER.info("[ArCraft] MC version: 1.21.1 (NeoForge)");
         LOGGER.info("[ArCraft] Tracking  : joins, PvP, blocks, mobs, items, arrows, chunks");
         LOGGER.info("[ArCraft] Initializing H2 database connection...");
+        SERVER = event.getServer();
         DatabaseManager.init();
+        final boolean onlineMode = event.getServer().usesAuthentication();
+        DatabaseManager.submit(() -> DatabaseManager.recordOnlineMode(onlineMode));
+        LOGGER.info("[ArCraft] Server online-mode: {}", onlineMode);
+        LOGGER.info("[ArCraft] Launching web dashboard (drag-and-drop mode)...");
+        WebBackendLauncher.start(DatabaseManager.getJdbcUrl());
         LOGGER.info("[ArCraft] Ready — all event handlers active");
         LOGGER.info("========================================");
     }
 
     @SubscribeEvent
     public void onServerStopping(ServerStoppingEvent event) {
-        LOGGER.info("[ArCraft] Server stopping — flushing DB writes and closing connection");
+        LOGGER.info("[ArCraft] Server stopping — stopping web dashboard, flushing DB writes and closing connection");
+        WebBackendLauncher.stop();
         DatabaseManager.close();
+        SERVER = null;
         LOGGER.info("[ArCraft] Shutdown complete");
     }
 }

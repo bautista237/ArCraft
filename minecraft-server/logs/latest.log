@@ -1,0 +1,62 @@
+[16Jun2026 10:40:19.431] [main/INFO] [cpw.mods.modlauncher.Launcher/MODLAUNCHER]: ModLauncher running: args [--launchTarget, forgeserver, --fml.neoForgeVersion, 21.1.228, --fml.fmlVersion, 4.0.42, --fml.mcVersion, 1.21.1, --fml.neoFormVersion, 20240808.144430]
+[16Jun2026 10:40:19.438] [main/INFO] [cpw.mods.modlauncher.Launcher/MODLAUNCHER]: JVM identified as Ubuntu OpenJDK 64-Bit Server VM 21.0.11+10-1-24.04.2-Ubuntu
+[16Jun2026 10:40:19.444] [main/INFO] [cpw.mods.modlauncher.Launcher/MODLAUNCHER]: ModLauncher 11.0.5+main.901c6ea8 starting: java version 21.0.11 by Ubuntu; OS Linux arch amd64 version 6.17.0-35-generic
+[16Jun2026 10:40:19.720] [main/INFO] [net.neoforged.fml.loading.ImmediateWindowHandler/]: ImmediateWindowProvider not loading because launch target is forgeserver
+[16Jun2026 10:40:19.845] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.7 Source=union:/home/overseer/Projects/university/lab1/ArCraft/minecraft-server/libraries/net/fabricmc/sponge-mixin/0.15.2+mixin.0.8.7/sponge-mixin-0.15.2+mixin.0.8.7.jar%2373!/ Service=ModLauncher Env=SERVER
+[16Jun2026 10:40:20.416] [main/INFO] [net.neoforged.fml.loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "server-1.21.1-20240808.144430-srg.jar" [locator: production server provider +net.neoforged:neoforge:21.1.228:server]
+[16Jun2026 10:40:20.464] [main/INFO] [net.neoforged.fml.loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "neoforge-21.1.228-universal.jar" [locator: PathBasedLocator[name=neoforge, paths=[libraries/net/neoforged/neoforge/21.1.228/neoforge-21.1.228-universal.jar]], reader: mod manifest]
+[16Jun2026 10:40:20.480] [main/INFO] [net.neoforged.fml.loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "arcraft-1.0.0-all.jar" [locator: {mods folder locator at /home/overseer/Projects/university/lab1/ArCraft/minecraft-server/mods}, reader: mod manifest]
+[16Jun2026 10:40:20.915] [main/INFO] [net.neoforged.fml.loading.moddiscovery.locators.JarInJarDependencyLocator/]: Found 4 dependencies adding them to mods collection
+[16Jun2026 10:40:20.916] [main/INFO] [net.neoforged.fml.loading.moddiscovery.ModDiscoverer/SCAN]: Found gamelibrary file "mixinextras-neoforge-0.5.3.jar" [parent: neoforge-21.1.228-universal.jar, locator: jarinjar, reader: mod manifest]
+[16Jun2026 10:40:20.916] [main/INFO] [net.neoforged.fml.loading.moddiscovery.ModDiscoverer/SCAN]: Found library file "jbcrypt-0.4.jar" [parent: arcraft-1.0.0-all.jar, locator: jarinjar]
+[16Jun2026 10:40:20.916] [main/INFO] [net.neoforged.fml.loading.moddiscovery.ModDiscoverer/SCAN]: Found library file "h2-2.2.224.jar" [parent: arcraft-1.0.0-all.jar, locator: jarinjar]
+[16Jun2026 10:40:20.917] [main/INFO] [net.neoforged.fml.loading.moddiscovery.ModDiscoverer/SCAN]: Found library file "net.neoforged.neoforge-coremods-21.1.228.jar" [parent: neoforge-21.1.228-universal.jar, locator: jarinjar, reader: mod manifest]
+[16Jun2026 10:40:20.920] [main/INFO] [net.neoforged.fml.loading.moddiscovery.ModDiscoverer/]: 
+     Mod List:
+		Name Version (Mod Id)
+
+		ArCraft 1.0.0 (arcraft)
+		Minecraft 1.21.1 (minecraft)
+		NeoForge 21.1.228 (neoforge)
+[16Jun2026 10:40:21.937] [main/INFO] [cpw.mods.modlauncher.LaunchServiceHandler/MODLAUNCHER]: Launching target 'forgeserver' with arguments []
+[16Jun2026 10:40:24.181] [main/INFO] [MixinExtras|Service/]: Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.5.3).
+[16Jun2026 10:40:33.111] [modloading-worker-0/INFO] [net.neoforged.neoforge.common.NeoForgeMod/NEOFORGE-MOD]: NeoForge mod loading, version 21.1.228, for MC 1.21.1
+[16Jun2026 10:40:33.840] [main/INFO] [com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService/]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, name=PROD]
+[16Jun2026 10:40:34.018] [main/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/home/overseer/Projects/university/lab1/ArCraft/minecraft-server/libraries/net/minecraft/server/1.21.1-20240808.144430/server-1.21.1-20240808.144430-srg.jar%23118!/assets/.mcassetsroot' uses unexpected schema
+[16Jun2026 10:40:34.018] [main/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/home/overseer/Projects/university/lab1/ArCraft/minecraft-server/libraries/net/minecraft/server/1.21.1-20240808.144430/server-1.21.1-20240808.144430-srg.jar%23118!/data/.mcassetsroot' uses unexpected schema
+[16Jun2026 10:40:36.475] [main/INFO] [net.minecraft.world.item.crafting.RecipeManager/]: Loaded 1290 recipes
+[16Jun2026 10:40:36.766] [main/INFO] [net.minecraft.advancements.AdvancementTree/]: Loaded 1399 advancements
+[16Jun2026 10:40:37.553] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Starting minecraft server version 1.21.1
+[16Jun2026 10:40:37.553] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Loading properties
+[16Jun2026 10:40:37.554] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Default game type: SURVIVAL
+[16Jun2026 10:40:37.554] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Generating keypair
+[16Jun2026 10:40:37.724] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Starting Minecraft server on *:25565
+[16Jun2026 10:40:37.825] [Server thread/INFO] [net.minecraft.server.network.ServerConnectionListener/]: Using epoll channel type
+[16Jun2026 10:40:37.964] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Preparing level "world"
+[16Jun2026 10:40:40.123] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Preparing start region for dimension minecraft:overworld
+[16Jun2026 10:40:40.389] [User Authenticator #1/INFO] [net.minecraft.server.network.ServerLoginPacketListenerImpl/]: UUID of player Vontk is 6a2e61b7-99d9-4d79-807f-9161fad6e60f
+[16Jun2026 10:40:40.630] [Worker-Main-10/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[16Jun2026 10:40:40.631] [Worker-Main-10/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[16Jun2026 10:40:40.847] [Server thread/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Time elapsed: 723 ms
+[16Jun2026 10:40:40.848] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Done (2.945s)! For help, type "help"
+[16Jun2026 10:40:40.913] [Server thread/INFO] [net.neoforged.neoforge.server.permission.PermissionAPI/]: Successfully initialized permission handler neoforge:default_handler
+[16Jun2026 10:40:40.913] [Server thread/INFO] [org.austral.ing.arcraft.ArcraftMod/]: [ArCraft] Server starting — initializing database
+[16Jun2026 10:40:41.416] [Server thread/INFO] [org.austral.ing.arcraft.DatabaseManager/]: [ArCraft] H2 database opened at jdbc:h2:file:./arcraft-data;AUTO_SERVER=TRUE
+[16Jun2026 10:40:43.235] [Server thread/INFO] [net.minecraft.server.players.PlayerList/]: Vontk[/127.0.0.1:51054] logged in with entity id 26 at (-7.063908506103107, 69.0, 5.6709565855851425)
+[16Jun2026 10:40:43.335] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Vontk joined the game
+[16Jun2026 10:40:58.877] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Vontk was slain by Zombie
+[16Jun2026 10:41:05.533] [Server thread/INFO] [net.minecraft.server.network.ServerGamePacketListenerImpl/]: Vontk lost connection: Disconnected
+[16Jun2026 10:41:05.534] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Vontk left the game
+[16Jun2026 10:41:55.887] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Stopping the server
+[16Jun2026 10:41:55.918] [Server thread/INFO] [org.austral.ing.arcraft.ArcraftMod/]: [ArCraft] Server stopping — closing database
+[16Jun2026 10:41:56.127] [Server thread/INFO] [org.austral.ing.arcraft.DatabaseManager/]: [ArCraft] H2 database closed
+[16Jun2026 10:41:56.129] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Stopping server
+[16Jun2026 10:41:56.131] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving players
+[16Jun2026 10:41:56.131] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving worlds
+[16Jun2026 10:41:56.292] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[16Jun2026 10:41:56.519] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+[16Jun2026 10:41:56.524] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+[16Jun2026 10:41:56.535] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[16Jun2026 10:41:56.536] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[16Jun2026 10:41:56.536] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[16Jun2026 10:41:56.537] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage: All dimensions are saved

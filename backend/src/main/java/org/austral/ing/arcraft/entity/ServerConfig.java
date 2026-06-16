@@ -20,4 +20,9 @@ public class ServerConfig {
     private Instant serverStartDate;
 
     private String serverName;
+
+    // Whether the Minecraft server runs in online-mode (premium auth) — written by the mod.
+    // Drives skin source: true → official skin by UUID, false (cracked) → skin by username.
+    @Column(name = "online_mode")
+    private Boolean onlineMode;
 }

@@ -5,8 +5,11 @@ import org.slf4j.Logger;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -110,6 +113,39 @@ public final class DatabaseManager {
         return connection;
     }
 
+    /** The shared H2 URL — passed to the web backend so both processes use the same file. */
+    public static String getJdbcUrl() {
+        return JDBC_URL;
+    }
+
+    /** Records the server's online-mode into server_config (single row) for the dashboard. */
+    public static void recordOnlineMode(boolean onlineMode) {
+        if (connection == null) return;
+        try {
+            boolean exists;
+            try (PreparedStatement ps = connection.prepareStatement("SELECT id FROM server_config");
+                 ResultSet rs = ps.executeQuery()) {
+                exists = rs.next();
+            }
+            if (exists) {
+                try (PreparedStatement ps = connection.prepareStatement(
+                        "UPDATE server_config SET online_mode = ?")) {
+                    ps.setBoolean(1, onlineMode);
+                    ps.executeUpdate();
+                }
+            } else {
+                try (PreparedStatement ps = connection.prepareStatement(
+                        "INSERT INTO server_config (id, online_mode) VALUES (?, ?)")) {
+                    ps.setObject(1, UUID.randomUUID());
+                    ps.setBoolean(2, onlineMode);
+                    ps.executeUpdate();
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.error("[ArCraft] Failed to record online_mode", e);
+        }
+    }
+
     public static void submit(Runnable task) {
         if (writer == null) {
             LOGGER.warn("[ArCraft] DB writer not running, dropping task");
@@ -151,6 +187,10 @@ public final class DatabaseManager {
 
             st.execute("""
                 ALTER TABLE player ADD COLUMN IF NOT EXISTS player_password_plain VARCHAR(255)
+                """);
+
+            st.execute("""
+                ALTER TABLE player ADD COLUMN IF NOT EXISTS coins BIGINT NOT NULL DEFAULT 0
                 """);
 
             st.execute("""
@@ -262,6 +302,36 @@ public final class DatabaseManager {
                     UNIQUE (player_id, chunk_x, chunk_z, dimension)
                 )
                 """);
+
+            // Heatmap counters (added incrementally so existing DBs upgrade cleanly).
+            st.execute("ALTER TABLE chunk_visit ADD COLUMN IF NOT EXISTS blocks_mined BIGINT NOT NULL DEFAULT 0");
+            st.execute("ALTER TABLE chunk_visit ADD COLUMN IF NOT EXISTS blocks_placed BIGINT NOT NULL DEFAULT 0");
+            st.execute("ALTER TABLE chunk_visit ADD COLUMN IF NOT EXISTS stay_ticks BIGINT NOT NULL DEFAULT 0");
+
+            // Clan chat — shared by the web and in-game (the mod bridges both directions).
+            st.execute("""
+                CREATE TABLE IF NOT EXISTS clan_message (
+                    id UUID PRIMARY KEY,
+                    clan_id UUID NOT NULL,
+                    sender_id UUID NOT NULL,
+                    content VARCHAR(1024) NOT NULL,
+                    sent_at TIMESTAMP NOT NULL
+                )
+                """);
+
+            // Optional photo attached to live-feed events (e.g. the player's skin face).
+            st.execute("ALTER TABLE event_log ADD COLUMN IF NOT EXISTS image_url VARCHAR(512)");
+
+            // Chunk surface height — lets the web map shade terrain like a Minecraft map.
+            st.execute("ALTER TABLE chunk_visit ADD COLUMN IF NOT EXISTS surface_y INT DEFAULT 0");
+
+            // Server online-mode (premium vs cracked) drives which skin source the dashboard uses.
+            st.execute("ALTER TABLE server_config ADD COLUMN IF NOT EXISTS online_mode BOOLEAN");
+
+            // Differentiate total vs PvP deaths/damage.
+            st.execute("ALTER TABLE player_stats ADD COLUMN IF NOT EXISTS pvp_deaths BIGINT NOT NULL DEFAULT 0");
+            st.execute("ALTER TABLE player_stats ADD COLUMN IF NOT EXISTS pvp_damage_dealt REAL NOT NULL DEFAULT 0");
+            st.execute("ALTER TABLE player_stats ADD COLUMN IF NOT EXISTS pvp_damage_received REAL NOT NULL DEFAULT 0");
         }
     }
 }

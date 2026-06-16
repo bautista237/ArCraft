@@ -99,6 +99,43 @@
         </div>
     </div>
 
+    <!-- Email -->
+    <div class="panel" style="margin-top:32px;">
+        <div class="panel-header">Email (for event reminders)</div>
+        <div class="panel-body" style="padding:20px;">
+            <form th:action="@{/admin/players/{id}/email(id=${player.id})}" method="post" class="admin-form">
+                <div class="form-row">
+                    <div class="form-group" style="flex:2;">
+                        <label for="email">Email address</label>
+                        <input type="text" id="email" name="email" th:value="${player.email}" placeholder="leave blank to remove">
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn-primary">Save Email</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Coins -->
+    <div class="panel" style="margin-top:32px;">
+        <div class="panel-header">Coins — current balance:
+            <span class="text-orange mono" th:text="${#numbers.formatInteger(player.coins, 1, 'COMMA')}">0</span></div>
+        <div class="panel-body" style="padding:20px;">
+            <form th:action="@{/admin/players/{id}/coins(id=${player.id})}" method="post" class="admin-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="amount">Grant / remove coins (use a negative number to remove)</label>
+                        <input type="number" id="amount" name="amount" value="100" step="1" required>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn-primary">Apply</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="panel" style="margin-top:32px;border-color:rgba(239,68,68,0.3);">
         <div class="panel-header" style="color:#f87171;">Danger Zone</div>
         <div class="panel-body" style="padding:20px;">

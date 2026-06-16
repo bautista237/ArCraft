@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Store — ArCraft</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <style>
+        .alert { padding: 12px 20px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 20px; }
+        .alert-error { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; }
+        .alert-success { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399; }
+        .store-balance {
+            display: inline-flex; align-items: center; gap: 8px;
+            font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #fb923c;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="~{fragments/layout :: navbar('store')}"></div>
+
+    <main class="page-content">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+            <h2 class="page-title" style="margin-bottom:0;">Store</h2>
+            <div class="store-balance">🪙 <span th:text="${#numbers.formatInteger(coins, 1, 'COMMA')}">0</span> coins</div>
+        </div>
+
+        <div class="alert alert-error" th:if="${error}" th:text="${error}" style="margin-top:16px;"></div>
+        <div class="alert alert-success" th:if="${success}" th:text="${success}" style="margin-top:16px;"></div>
+
+        <p class="text-muted" style="margin:14px 0 18px;font-size:0.85rem;">
+            Earn coins through achievements and in-game work, then spend them on titles and cosmetics.
+        </p>
+
+        <!-- How to earn coins -->
+        <div class="panel" style="margin-bottom:24px;">
+            <div class="panel-header">🪙 How to earn coins</div>
+            <div class="panel-body">
+                <table class="data-table">
+                    <thead><tr><th>Action</th><th class="text-right">Reward</th></tr></thead>
+                    <tbody>
+                        <tr><td>First Ender Dragon kill</td><td class="num text-right">+100</td></tr>
+                        <tr><td>First Warden kill</td><td class="num text-right">+75</td></tr>
+                        <tr><td>First Wither kill</td><td class="num text-right">+50</td></tr>
+                        <tr><td>First Elder Guardian kill</td><td class="num text-right">+30</td></tr>
+                        <tr><td>Each diamond ore mined</td><td class="num text-right">+10</td></tr>
+                        <tr><td>First craft of a notable item (bow, diamond/netherite gear, beacon…)</td><td class="num text-right">+25</td></tr>
+                        <tr><td>First time entering the Nether or the End</td><td class="num text-right">+20</td></tr>
+                        <tr><td>Stat milestones (10/50/100/250/500/1k… kills, mobs, blocks mined/placed, items crafted)</td><td class="num text-right">+5 … +1000</td></tr>
+                        <tr><td>Granted by an admin</td><td class="num text-right">varies</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Catalogue -->
+        <div class="store-grid">
+            <div class="store-item" th:each="item : ${items}">
+                <span class="store-cat" th:classappend="${item.category.name().toLowerCase()}"
+                      th:text="${item.category}">CATEGORY</span>
+                <div class="store-name" th:text="${item.name}">Item Name</div>
+                <div class="store-desc" th:text="${item.description}">Item description</div>
+                <div th:if="${item.effect != null and !item.effect.isEmpty()}" class="store-effect"
+                     th:text="'⚡ ' + ${#strings.replace(#strings.toLowerCase(item.effect),'_',' ')} + ' (in-game)'">effect</div>
+                <div class="store-footer">
+                    <span class="store-price">🪙 <span th:text="${#numbers.formatInteger(item.price, 1, 'COMMA')}">0</span></span>
+                    <span th:if="${ownedItemIds.contains(item.id)}" class="store-owned">✓ Owned</span>
+                    <form th:unless="${ownedItemIds.contains(item.id)}" th:action="@{/store/buy}" method="post" style="display:inline;">
+                        <input type="hidden" name="itemId" th:value="${item.id}"/>
+                        <button type="submit" class="btn-small btn-green"
+                                th:disabled="${coins < item.price}"
+                                th:text="${coins < item.price} ? 'Not enough' : 'Buy'">Buy</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="empty-state" th:if="${#lists.isEmpty(items)}">The store is empty. Check back soon!</div>
+
+        <!-- Inventory -->
+        <h2 class="page-title" style="margin-top:40px;">Your Inventory</h2>
+        <div class="panel">
+            <div class="panel-body">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Category</th>
+                            <th class="text-right">Paid</th>
+                            <th class="text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="p : ${purchases}">
+                            <td th:text="${p.item.name}">Item</td>
+                            <td>
+                                <span class="store-cat" th:classappend="${p.item.category.name().toLowerCase()}"
+                                      th:text="${p.item.category}">CATEGORY</span>
+                            </td>
+                            <td class="num text-right" th:text="${#numbers.formatInteger(p.pricePaid, 1, 'COMMA')}">0</td>
+                            <td class="text-right">
+                                <!-- Titles: single equip -->
+                                <span th:if="${p.item.category.name() == 'TITLE' and p.equipped}" class="store-owned">★ Equipped</span>
+                                <form th:if="${p.item.category.name() == 'TITLE' and !p.equipped}"
+                                      th:action="@{/store/equip}" method="post" style="display:inline;">
+                                    <input type="hidden" name="purchaseId" th:value="${p.id}"/>
+                                    <button type="submit" class="btn-small">Equip title</button>
+                                </form>
+                                <!-- Cosmetics (trails / glow): toggle on/off -->
+                                <form th:if="${p.item.effect != null and !p.item.effect.isEmpty()}"
+                                      th:action="@{/store/toggle}" method="post" style="display:inline;">
+                                    <input type="hidden" name="purchaseId" th:value="${p.id}"/>
+                                    <button type="submit" class="btn-small"
+                                            th:classappend="${p.equipped} ? ' btn-danger' : ' btn-green'"
+                                            th:text="${p.equipped} ? '● Equipped — Unequip' : 'Equip'">Equip</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="empty-state" th:if="${#lists.isEmpty(purchases)}">You haven't bought anything yet.</div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

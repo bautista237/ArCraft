@@ -14,7 +14,7 @@ import java.util.UUID;
 public class EventLog {
 
     public enum EventType {
-        PLAYER_DEATH, BOSS_KILL, ACHIEVEMENT, PVP_KILL, SERVER_MILESTONE, CUSTOM
+        PLAYER_DEATH, BOSS_KILL, ACHIEVEMENT, PVP_KILL, SERVER_MILESTONE, CHAT, CUSTOM
     }
 
     @Id
@@ -31,6 +31,10 @@ public class EventLog {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "player_id")
     private Player player;
+
+    // Optional image shown alongside the event in the live feed (e.g. the player's skin face).
+    @Column(name = "image_url", length = 512)
+    private String imageUrl;
 
     @Column(nullable = false)
     private Instant occurredAt;

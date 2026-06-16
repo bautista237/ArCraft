@@ -69,6 +69,38 @@ a:hover { color: #34d399; }
 
 .navbar .user-section .username { color: #a3a3a3; }
 
+.btn-info-circle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1.5px solid #6b7280;
+    color: #9ca3af;
+    font-family: 'Georgia', serif;
+    font-style: italic;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-decoration: none;
+    line-height: 1;
+    transition: all 0.2s;
+}
+.btn-info-circle:hover { border-color: #9ca3af; color: #e5e5e5; background: rgba(156,163,175,0.12); }
+
+.btn-nav {
+    padding: 6px 12px;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 6px;
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.08);
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+.btn-nav:hover { background: rgba(16, 185, 129, 0.16); color: #34d399; }
+
 .btn-logout {
     padding: 6px 14px;
     background: transparent;
@@ -145,6 +177,22 @@ a:hover { color: #34d399; }
 @media (max-width: 800px) {
     .dashboard-grid { grid-template-columns: 1fr; }
 }
+
+/* === 3-column stat grid (server activity) === */
+.stats-3col {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+}
+
+.stat-pie-panel {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    flex-wrap: wrap;
+}
+.stat-pie { flex-shrink: 0; }
 
 /* === Card/Panel === */
 .panel {
@@ -265,6 +313,17 @@ a:hover { color: #34d399; }
     margin-top: 2px;
 }
 
+.event-photo {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+    image-rendering: pixelated;
+    background: #222;
+    border: 1px solid #2a2a2a;
+}
+
 .event-icon.pvp { background: rgba(239, 68, 68, 0.15); color: #f87171; }
 .event-icon.boss { background: rgba(249, 115, 22, 0.15); color: #fb923c; }
 .event-icon.achievement { background: rgba(16, 185, 129, 0.15); color: #34d399; }
@@ -352,6 +411,25 @@ a:hover { color: #34d399; }
 .breakdown-name {
     font-size: 0.85rem;
     color: #d4d4d4;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mc-icon {
+    width: 20px;
+    height: 20px;
+    image-rendering: pixelated;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.mc-emoji {
+    font-size: 1rem;
+    line-height: 1;
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
 }
 
 .breakdown-value {
@@ -584,6 +662,164 @@ a:hover { color: #34d399; }
 .badge-player_death { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
 .badge-server_milestone { background: rgba(6, 182, 212, 0.15); color: #22d3ee; }
 .badge-custom { background: rgba(163, 163, 163, 0.15); color: #a3a3a3; }
+
+/* === Player avatars (skin icons) === */
+.player-avatar-img {
+    border-radius: 4px;
+    image-rendering: pixelated;
+    vertical-align: middle;
+    background: #222;
+    flex-shrink: 0;
+}
+
+.player-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.profile-avatar-img {
+    width: 64px;
+    height: 64px;
+    border: 2px solid #10b981;
+    border-radius: 12px;
+    background: #1a1a1a;
+    image-rendering: pixelated;
+    flex-shrink: 0;
+}
+
+.player-title {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 4px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    background: rgba(249, 115, 22, 0.15);
+    color: #fb923c;
+    border: 1px solid rgba(249, 115, 22, 0.3);
+    white-space: nowrap;
+}
+
+/* Special #1-rank titles — gold. */
+.player-title.title-top {
+    background: rgba(250, 204, 21, 0.16);
+    color: #fde047;
+    border-color: rgba(250, 204, 21, 0.45);
+    box-shadow: 0 0 6px rgba(250, 204, 21, 0.15);
+}
+
+/* === Navbar coin balance === */
+.nav-coins {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: rgba(249, 115, 22, 0.1);
+    border: 1px solid rgba(249, 115, 22, 0.25);
+    color: #fb923c;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+.nav-coins .coin-icon { font-size: 0.85rem; line-height: 1; }
+
+/* === Event banners (dashboard) === */
+.banner-stack { margin-bottom: 28px; display: flex; flex-direction: column; gap: 12px; }
+
+.event-banner {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px 20px;
+    border-radius: 10px;
+    background: linear-gradient(90deg, rgba(16,185,129,0.12), rgba(6,182,212,0.08));
+    border: 1px solid rgba(16,185,129,0.3);
+    overflow: hidden;
+}
+.event-banner.upcoming {
+    background: linear-gradient(90deg, rgba(249,115,22,0.12), rgba(249,115,22,0.04));
+    border-color: rgba(249,115,22,0.3);
+}
+.event-banner .banner-mark {
+    font-size: 1.6rem;
+    line-height: 1;
+    margin-top: 2px;
+}
+.event-banner .banner-body { flex: 1; min-width: 0; }
+.event-banner .banner-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #f5f5f5;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.event-banner .banner-desc { font-size: 0.85rem; color: #d4d4d4; margin-top: 4px; }
+.event-banner .banner-dates {
+    font-size: 0.72rem;
+    color: #737373;
+    margin-top: 6px;
+    font-family: 'JetBrains Mono', monospace;
+}
+.banner-state {
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+}
+.banner-state.live { background: rgba(16,185,129,0.2); color: #34d399; }
+.banner-state.soon { background: rgba(249,115,22,0.2); color: #fb923c; }
+
+/* === Store === */
+.store-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+}
+.store-item {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.store-item .store-cat {
+    align-self: flex-start;
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+}
+.store-cat.skin { background: rgba(6,182,212,0.15); color: #22d3ee; }
+.store-cat.title { background: rgba(249,115,22,0.15); color: #fb923c; }
+.store-cat.cosmetic { background: rgba(16,185,129,0.15); color: #34d399; }
+.store-item .store-name { font-size: 1rem; font-weight: 700; color: #f5f5f5; }
+.store-item .store-desc { font-size: 0.8rem; color: #a3a3a3; flex: 1; }
+.store-item .store-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 6px;
+}
+.store-price {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: #fb923c;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+.store-owned { font-size: 0.75rem; color: #34d399; font-weight: 600; }
+.store-effect { font-size: 0.72rem; color: #22d3ee; font-weight: 600; text-transform: capitalize; }
 
 /* === Utilities === */
 .text-green { color: #10b981; }

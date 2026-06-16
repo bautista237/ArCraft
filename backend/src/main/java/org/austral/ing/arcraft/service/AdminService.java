@@ -50,7 +50,7 @@ public class AdminService {
         return playerStatsRepository.findByPlayerId(playerId);
     }
 
-    public boolean createPlayer(String username, String password, boolean isAdmin) {
+    public boolean createPlayer(String username, String password, boolean isAdmin, String email) {
         if (username == null || username.isBlank()) {
             return false;
         }
@@ -61,6 +61,7 @@ public class AdminService {
         player.setUsername(username);
         player.setPasswordHash(passwordEncoder.encode(password));
         player.setAdmin(isAdmin);
+        player.setEmail(email == null || email.isBlank() ? null : email.trim());
         player.setCreatedAt(Instant.now());
         playerRepository.save(player);
 
@@ -68,6 +69,12 @@ public class AdminService {
         stats.setPlayer(player);
         playerStatsRepository.save(stats);
         return true;
+    }
+
+    public void updatePlayerEmail(UUID playerId, String email) {
+        Player player = playerRepository.findById(playerId).orElseThrow();
+        player.setEmail(email == null || email.isBlank() ? null : email.trim());
+        playerRepository.save(player);
     }
 
     public void updatePlayerStats(UUID playerId, long kills, long deaths,
@@ -141,11 +148,12 @@ public class AdminService {
         return eventLogRepository.findTop20ByOrderByOccurredAtDesc();
     }
 
-    public void createEvent(EventLog.EventType type, String description, UUID playerId) {
+    public void createEvent(EventLog.EventType type, String description, UUID playerId, String imageUrl) {
         EventLog event = new EventLog();
         event.setType(type);
         event.setDescription(description);
         event.setOccurredAt(Instant.now());
+        event.setImageUrl(imageUrl == null || imageUrl.isBlank() ? null : imageUrl.trim());
         if (playerId != null) {
             event.setPlayer(playerRepository.findById(playerId).orElse(null));
         }

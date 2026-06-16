@@ -8,5 +8,6 @@ import java.util.UUID;
 
 public interface EventLogRepository extends JpaRepository<EventLog, UUID> {
     List<EventLog> findTop20ByOrderByOccurredAtDesc();
+    List<EventLog> findTop5ByOrderByOccurredAtDesc();
     List<EventLog> findByPlayerIdOrderByOccurredAtDesc(UUID playerId);
 }

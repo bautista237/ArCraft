@@ -125,6 +125,40 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
+// ── Drag-and-drop packaging ────────────────────────────────────────────────
+// Bundle the Spring Boot backend fat jar inside the mod jar as /arcraft-backend.jar.
+// At runtime WebBackendLauncher extracts and runs it, so dropping this single jar into
+// mods/ and starting the server brings up the dashboard on :8080 with no extra script.
+//
+//   ./gradlew build -PbundleWeb     → builds the backend and bundles it (drag-and-drop jar)
+//   ./gradlew build                 → plain mod jar (web via arcraft-server.sh, CI default)
+def backendDir = file("$projectDir/../backend")
+def bundledBackendJar = file("$projectDir/src/main/resources/arcraft-backend.jar")
+def isWindows = System.getProperty('os.name').toLowerCase().contains('win')
+
+tasks.register('buildBackendJar', Exec) {
+    description = 'Builds the Spring Boot backend fat jar via Maven.'
+    group = 'arcraft'
+    workingDir backendDir
+    commandLine isWindows ? 'mvnw.cmd' : './mvnw', '-q', '-DskipTests', 'package'
+}
+
+tasks.register('bundleBackendJar', Copy) {
+    description = 'Copies the backend fat jar into mod resources for drag-and-drop packaging.'
+    group = 'arcraft'
+    dependsOn 'buildBackendJar'
+    from("${backendDir}/target") {
+        include 'arcraft-*.jar'
+        exclude '*.original'
+    }
+    into bundledBackendJar.parentFile
+    rename { 'arcraft-backend.jar' }
+}
+
+if (project.hasProperty('bundleWeb')) {
+    tasks.named('processResources') { dependsOn 'bundleBackendJar' }
+}
+
 idea {
     module {
         downloadSources = true

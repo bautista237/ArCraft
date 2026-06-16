@@ -57,7 +57,9 @@
             <div class="clan-info">
                 <h1 th:text="${clan.name}">Clan Name</h1>
                 <div class="meta">
-                    Leader: <a th:href="@{/players/{u}(u=${clan.leader.username})}" th:text="${clan.leader.username}">leader</a>
+                    Leader:
+                    <img class="player-avatar-img" th:src="${@skinService.face(clan.leader, 18)}" width="18" height="18" alt="" style="vertical-align:middle;"/>
+                    <a th:href="@{/players/{u}(u=${clan.leader.username})}" th:text="${clan.leader.username}">leader</a>
                     &nbsp;&middot;&nbsp;
                     Friendly Fire: <span th:text="${clan.friendlyFireEnabled ? 'ON' : 'OFF'}">OFF</span>
                     &nbsp;&middot;&nbsp;
@@ -126,8 +128,7 @@
                     <tbody>
                         <tr th:each="row : ${memberRows}">
                             <td>
-                                <a class="player-link" th:href="@{/players/{u}(u=${row.player.username})}"
-                                   th:text="${row.player.username}">Steve</a>
+                                <span th:replace="~{fragments/layout :: playerCell(${row.player}, null)}"></span>
                             </td>
                             <td class="num text-right" th:text="${row.kills}">0</td>
                             <td class="num text-right" th:text="${row.deaths}">0</td>
@@ -154,8 +155,8 @@
 
         <!-- Clan Chat: only members can read or write -->
         <div class="panel chat-section" th:if="${isMember}">
-            <div class="panel-header">Clan Chat</div>
-            <div class="chat-messages">
+            <div class="panel-header">Clan Chat <span class="text-muted" style="font-size:0.7rem;font-weight:400;">· synced with in-game (<code>/clan &lt;msg&gt;</code>, <code>/clan coords</code>)</span></div>
+            <div class="chat-messages" id="chatMessages">
                 <div th:if="${#lists.isEmpty(messages)}" class="empty-state">No messages yet.</div>
                 <div class="chat-msg" th:each="msg : ${messages}">
                     <span class="chat-sender" th:text="${msg.sender.username}">player</span>
@@ -168,6 +169,31 @@
                 <button type="submit" class="btn-primary">Send</button>
             </form>
         </div>
+
+        <script th:if="${isMember}" th:inline="javascript">
+            /*<![CDATA[*/
+            const CLAN_TAG = /*[[${clan.tag}]]*/ '';
+            const box = document.getElementById('chatMessages');
+            function esc(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+            async function refreshChat(){
+                try {
+                    const res = await fetch('/clans/' + encodeURIComponent(CLAN_TAG) + '/messages');
+                    if(!res.ok) return;
+                    const msgs = await res.json();
+                    const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 50;
+                    box.innerHTML = msgs.length
+                        ? msgs.map(m => '<div class="chat-msg"><span class="chat-sender">' + esc(m.sender) +
+                            '</span><span class="chat-time">' + esc(m.time) + '</span><div class="chat-text">' +
+                            esc(m.content) + '</div></div>').join('')
+                        : '<div class="empty-state">No messages yet.</div>';
+                    if(atBottom) box.scrollTop = box.scrollHeight;
+                } catch(e) { /* ignore transient errors */ }
+            }
+            box.scrollTop = box.scrollHeight;
+            setInterval(refreshChat, 4000);
+            refreshChat();
+            /*]]>*/
+        </script>
         <div class="panel chat-section" th:unless="${isMember}">
             <div class="panel-header">Clan Chat</div>
             <div class="panel-body">

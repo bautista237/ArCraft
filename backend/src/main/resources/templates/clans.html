@@ -37,8 +37,7 @@
                                    th:text="${row.clan.name}">Clan Name</a>
                             </td>
                             <td>
-                                <a class="player-link" th:href="@{/players/{u}(u=${row.clan.leader.username})}"
-                                   th:text="${row.clan.leader.username}">Leader</a>
+                                <span th:replace="~{fragments/layout :: playerCell(${row.clan.leader}, null)}"></span>
                             </td>
                             <td class="num text-right" th:text="${row.memberCount}">0</td>
                             <td class="num text-right" th:text="${#numbers.formatInteger(row.totalKills, 1, 'COMMA')}">0</td>

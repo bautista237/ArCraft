@@ -26,6 +26,13 @@ public class Player {
     @Column(nullable = false)
     private boolean isAdmin = false;
 
+    @Column(nullable = false)
+    private long coins = 0;
+
+    // Optional — used for event reminder emails. Cracked players may never set one.
+    @Column
+    private String email;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "clan_id")
     private Clan clan;

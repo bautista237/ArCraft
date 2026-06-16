@@ -2,14 +2,20 @@ package org.austral.ing.arcraft.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.austral.ing.arcraft.entity.EventLog;
+import org.austral.ing.arcraft.entity.StoreItem;
 import org.austral.ing.arcraft.service.AdminService;
+import org.austral.ing.arcraft.service.EventService;
+import org.austral.ing.arcraft.service.StoreService;
 import org.springframework.beans.propertyeditors.CustomNumberEditor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.UUID;
 
 @Controller
@@ -18,6 +24,8 @@ import java.util.UUID;
 public class AdminController {
 
     private final AdminService adminService;
+    private final EventService eventService;
+    private final StoreService storeService;
 
     @InitBinder
     public void initBinder(WebDataBinder binder) {
@@ -45,8 +53,9 @@ public class AdminController {
     public String createPlayer(@RequestParam String username,
                                @RequestParam String password,
                                @RequestParam(defaultValue = "false") boolean isAdmin,
+                               @RequestParam(required = false) String email,
                                RedirectAttributes redirectAttributes) {
-        boolean created = adminService.createPlayer(username, password, isAdmin);
+        boolean created = adminService.createPlayer(username, password, isAdmin, email);
         if (!created) {
             redirectAttributes.addFlashAttribute("error",
                     "A player with username '" + username + "' already exists.");
@@ -122,8 +131,9 @@ public class AdminController {
     @PostMapping("/events")
     public String createEvent(@RequestParam EventLog.EventType type,
                               @RequestParam String description,
-                              @RequestParam(required = false) UUID playerId) {
-        adminService.createEvent(type, description, playerId);
+                              @RequestParam(required = false) UUID playerId,
+                              @RequestParam(required = false) String imageUrl) {
+        adminService.createEvent(type, description, playerId, imageUrl);
         return "redirect:/admin/events";
     }
 
@@ -197,6 +207,93 @@ public class AdminController {
     public String removeMember(@PathVariable UUID id, @RequestParam UUID playerId) {
         adminService.removeMemberFromClan(playerId);
         return "redirect:/admin/clans/" + id + "/edit";
+    }
+
+    @PostMapping("/players/{id}/email")
+    public String updateEmail(@PathVariable UUID id, @RequestParam(required = false) String email,
+                              RedirectAttributes redirectAttributes) {
+        adminService.updatePlayerEmail(id, email);
+        redirectAttributes.addFlashAttribute("success", "Email updated.");
+        return "redirect:/admin/players/" + id + "/edit";
+    }
+
+    // ── Coins ────────────────────────────────────────────────
+
+    @PostMapping("/players/{id}/coins")
+    public String grantCoins(@PathVariable UUID id, @RequestParam long amount,
+                             RedirectAttributes redirectAttributes) {
+        String error = storeService.grantCoins(id, amount);
+        if (error != null) {
+            redirectAttributes.addFlashAttribute("error", error);
+        } else {
+            redirectAttributes.addFlashAttribute("success",
+                    (amount >= 0 ? "Granted " : "Removed ") + Math.abs(amount) + " coins.");
+        }
+        return "redirect:/admin/players/" + id + "/edit";
+    }
+
+    // ── Event Banners ────────────────────────────────────────
+
+    @GetMapping("/banners")
+    public String listBanners(Model model) {
+        model.addAttribute("events", eventService.getAllEvents());
+        return "admin/banners";
+    }
+
+    @PostMapping("/banners")
+    public String createBanner(@RequestParam String title,
+                               @RequestParam(required = false) String description,
+                               @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+                               @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+                               RedirectAttributes redirectAttributes) {
+        ZoneId zone = ZoneId.systemDefault();
+        String error = eventService.createEvent(title, description,
+                startDate.atZone(zone).toInstant(), endDate.atZone(zone).toInstant());
+        if (error != null) {
+            redirectAttributes.addFlashAttribute("error", error);
+        } else {
+            redirectAttributes.addFlashAttribute("success", "Event '" + title + "' created.");
+        }
+        return "redirect:/admin/banners";
+    }
+
+    @PostMapping("/banners/{id}/delete")
+    public String deleteBanner(@PathVariable UUID id, RedirectAttributes redirectAttributes) {
+        eventService.deleteEvent(id);
+        redirectAttributes.addFlashAttribute("success", "Event deleted.");
+        return "redirect:/admin/banners";
+    }
+
+    // ── Store ────────────────────────────────────────────────
+
+    @GetMapping("/store")
+    public String listStore(Model model) {
+        model.addAttribute("items", storeService.getAllItems());
+        model.addAttribute("categories", StoreItem.Category.values());
+        return "admin/store";
+    }
+
+    @PostMapping("/store")
+    public String createStoreItem(@RequestParam String name,
+                                  @RequestParam(required = false) String description,
+                                  @RequestParam long price,
+                                  @RequestParam StoreItem.Category category,
+                                  @RequestParam(required = false) String effect,
+                                  RedirectAttributes redirectAttributes) {
+        String error = storeService.createItem(name, description, price, category, effect);
+        if (error != null) {
+            redirectAttributes.addFlashAttribute("error", error);
+        } else {
+            redirectAttributes.addFlashAttribute("success", "Item '" + name + "' added to the store.");
+        }
+        return "redirect:/admin/store";
+    }
+
+    @PostMapping("/store/{id}/delete")
+    public String deleteStoreItem(@PathVariable UUID id, RedirectAttributes redirectAttributes) {
+        storeService.deleteItem(id);
+        redirectAttributes.addFlashAttribute("success", "Store item deleted.");
+        return "redirect:/admin/store";
     }
 
 }

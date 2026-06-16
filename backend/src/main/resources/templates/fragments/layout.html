@@ -12,15 +12,37 @@
         <a th:href="@{/rankings}" th:classappend="${activePage == 'rankings'} ? 'active'">Rankings</a>
         <a th:href="@{/map}" th:classappend="${activePage == 'map'} ? 'active'">Map</a>
         <a th:href="@{/clans}" th:classappend="${activePage == 'clans'} ? 'active'">Clans</a>
+        <a th:href="@{/store}" th:classappend="${activePage == 'store'} ? 'active'">Store</a>
         <a th:href="@{/admin}" th:classappend="${activePage == 'admin'} ? 'active'"
            sec:authorize="hasRole('ROLE_ADMIN')">Admin</a>
     </nav>
     <div class="user-section">
+        <a th:href="@{/info}" class="btn-info-circle" title="About ArCraft — what the mod does, logs &amp; coin rewards">i</a>
+        <a th:if="${navUsername != null}" th:href="@{/players/{u}(u=${navUsername})}" class="btn-nav">My Profile</a>
+        <a th:if="${navClanTag != null}" th:href="@{/clans/{t}(t=${navClanTag})}" class="btn-nav">My Clan</a>
+        <span class="nav-coins mono" th:if="${navCoins != null}">
+            <span class="coin-icon">🪙</span><span th:text="${#numbers.formatInteger(navCoins, 1, 'COMMA')}">0</span>
+        </span>
         <span class="username" th:text="${#authentication.name}">player</span>
         <form th:action="@{/logout}" method="post" style="display:inline">
             <button type="submit" class="btn-logout">Sign Out</button>
         </form>
     </div>
 </header>
+
+<!-- Player skin face (minotar; official skin by UUID online, by username when cracked). -->
+<img th:fragment="avatar(player, size)" class="player-avatar-img"
+     th:src="${@skinService.face(player, size)}"
+     th:width="${size}" th:height="${size}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"/>
+
+<!-- Player cell: skin icon + linked username + title chips (titles is a List<Title> or null). -->
+<span th:fragment="playerCell(player, titles)" class="player-cell">
+    <img class="player-avatar-img"
+         th:src="${@skinService.face(player, 24)}"
+         width="24" height="24" alt="" loading="lazy" onerror="this.style.visibility='hidden'"/>
+    <a class="player-link" th:href="@{/players/{u}(u=${player.username})}" th:text="${player.username}">Steve</a>
+    <span class="player-title" th:each="t : ${titles}"
+          th:classappend="${t.special} ? ' title-top' : ''" th:text="${t.text}">Title</span>
+</span>
 
 </html>

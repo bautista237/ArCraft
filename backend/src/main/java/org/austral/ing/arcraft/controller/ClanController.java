@@ -13,9 +13,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
+import java.time.ZoneId;
 import java.util.*;
 
 @Controller
@@ -116,6 +118,29 @@ public class ClanController {
         model.addAttribute("leaderId", clan.getLeader() != null ? clan.getLeader().getId() : null);
 
         return "clan-profile";
+    }
+
+    /** Live clan-chat feed (JSON) for members — polled by the clan page to show in-game messages. */
+    @GetMapping("/clans/{tag}/messages")
+    @ResponseBody
+    public List<Map<String, String>> clanMessages(@PathVariable String tag, Principal principal) {
+        if (principal == null) return List.of();
+        Optional<Clan> clanOpt = clanService.findByTag(tag);
+        if (clanOpt.isEmpty()) return List.of();
+        Clan clan = clanOpt.get();
+        Player player = playerRepository.findByUsername(principal.getName()).orElse(null);
+        boolean isMember = player != null && player.getClan() != null
+                && player.getClan().getId().equals(clan.getId());
+        if (!isMember) return List.of();
+        List<Map<String, String>> out = new ArrayList<>();
+        for (var m : clanService.getRecentMessages(clan.getId(), 50)) {
+            out.add(Map.of(
+                    "sender", m.getSender().getUsername(),
+                    "content", m.getContent(),
+                    "time", m.getSentAt().atZone(ZoneId.systemDefault()).toLocalDateTime()
+                            .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))));
+        }
+        return out;
     }
 
     @PostMapping("/clans/{tag}/message")

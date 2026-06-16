@@ -45,6 +45,31 @@
             color: #10b981;
         }
 
+        .layer-tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .layer-btn {
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #737373;
+            background: #161616;
+            border: 1px solid #2a2a2a;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+        .layer-btn:hover { color: #e5e5e5; border-color: #444; }
+        .layer-btn.active {
+            background: rgba(249,115,22,0.12);
+            border-color: rgba(249,115,22,0.4);
+            color: #fb923c;
+        }
+
         .map-wrapper {
             position: relative;
             background: #111;
@@ -177,6 +202,14 @@
             </div>
         </div>
 
+        <!-- Layer selector -->
+        <div class="layer-tabs" id="layerTabs">
+            <button type="button" class="layer-btn active" data-mode="terrain">Terrain</button>
+            <button type="button" class="layer-btn" data-mode="mined">Mining heat</button>
+            <button type="button" class="layer-btn" data-mode="placed">Building heat</button>
+            <button type="button" class="layer-btn" data-mode="stay">Activity heat</button>
+        </div>
+
         <!-- Canvas container -->
         <div class="map-wrapper">
             <canvas id="arcraftMap"></canvas>
@@ -194,8 +227,19 @@
             <div class="map-hint">Scroll to zoom · Drag to pan · Double-click to reset</div>
         </div>
 
-        <!-- Legend -->
-        <div class="map-legend" style="margin-top: 14px;">
+        <!-- Heat legend (shown in heatmap modes) -->
+        <div class="map-legend" id="heatLegend" style="margin-top:14px;display:none;align-items:center;">
+            <span id="heatLabel" style="font-size:0.75rem;color:#a3a3a3;">Mining intensity</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+                <span style="font-size:0.7rem;color:#737373;">low</span>
+                <div style="width:160px;height:12px;border-radius:3px;background:linear-gradient(90deg,#10243a,#1e6091,#f97316,#ef4444);"></div>
+                <span style="font-size:0.7rem;color:#737373;">high</span>
+            </div>
+            <span id="heatMax" style="font-size:0.7rem;color:#525252;font-family:'JetBrains Mono',monospace;"></span>
+        </div>
+
+        <!-- Terrain legend -->
+        <div class="map-legend" id="terrainLegend" style="margin-top: 14px;">
             <div class="legend-item"><div class="legend-swatch" style="background:rgb(106,127,75)"></div>Grass</div>
             <div class="legend-item"><div class="legend-swatch" style="background:rgb(63,118,228)"></div>Water</div>
             <div class="legend-item"><div class="legend-swatch" style="background:rgb(219,207,163)"></div>Sand / Beach</div>
@@ -230,6 +274,60 @@
         let panX     = 0, panY = 0;
         let cellSize = 8;
         let minX = 0, maxX = 0, minZ = 0, maxZ = 0;
+        let mode = 'terrain';          // terrain | mined | placed | stay
+        let heatMax = { mined: 0, placed: 0, stay: 0 };
+
+        function recomputeHeatMax() {
+            heatMax = { mined: 0, placed: 0, stay: 0 };
+            for (const c of chunks) {
+                if ((c.mined  || 0) > heatMax.mined)  heatMax.mined  = c.mined;
+                if ((c.placed || 0) > heatMax.placed) heatMax.placed = c.placed;
+                if ((c.stay   || 0) > heatMax.stay)   heatMax.stay   = c.stay;
+            }
+        }
+
+        // Heat colour ramp: dark blue → teal → orange → red as value goes 0→1.
+        function heatColor(t) {
+            t = Math.max(0, Math.min(1, t));
+            const stops = [
+                [16, 36, 58],    // 0.0
+                [30, 96, 145],   // 0.33
+                [249, 115, 22],  // 0.66
+                [239, 68, 68],   // 1.0
+            ];
+            const seg = t * (stops.length - 1);
+            const i = Math.floor(seg);
+            const f = seg - i;
+            if (i >= stops.length - 1) return stops[stops.length - 1];
+            const a = stops[i], b = stops[i + 1];
+            return [
+                Math.round(a[0] + (b[0] - a[0]) * f),
+                Math.round(a[1] + (b[1] - a[1]) * f),
+                Math.round(a[2] + (b[2] - a[2]) * f),
+            ];
+        }
+
+        function cellColor(c) {
+            if (mode === 'terrain') {
+                // Hillshade like a Minecraft map: brighten/darken vs the chunk to the north.
+                const north = chunkMap.get(c.chunkX + ',' + (c.chunkZ - 1));
+                let f = 1;
+                if (north && north.surfaceY && c.surfaceY) {
+                    const d = c.surfaceY - north.surfaceY;
+                    f = Math.max(0.65, Math.min(1.35, 1 + d * 0.05));
+                }
+                return [
+                    Math.round(Math.min(255, c.r * f)),
+                    Math.round(Math.min(255, c.g * f)),
+                    Math.round(Math.min(255, c.b * f)),
+                ];
+            }
+            const value = c[mode] || 0;
+            const max = heatMax[mode] || 0;
+            if (max === 0 || value === 0) return [24, 24, 24];
+            // sqrt scaling so small-but-nonzero activity is still visible
+            return heatColor(Math.sqrt(value / max));
+        }
 
         // ── Compute bounds and initial pan ───────────────────────────
         function computeBounds() {
@@ -272,7 +370,8 @@
             for (const c of chunks) {
                 const px = (c.chunkX - minX) * cellSize;
                 const pz = (c.chunkZ - minZ) * cellSize;
-                ctx.fillStyle = `rgb(${c.r},${c.g},${c.b})`;
+                const col = cellColor(c);
+                ctx.fillStyle = `rgb(${col[0]},${col[1]},${col[2]})`;
                 ctx.fillRect(px, pz, cellSize, cellSize);
             }
 
@@ -349,6 +448,28 @@
 
         canvas.addEventListener('dblclick', resetView);
 
+        // ── Layer / heatmap mode switching ───────────────────────────
+        const heatLabels = { mined: 'Mining intensity', placed: 'Building intensity', stay: 'Time-spent intensity' };
+        document.querySelectorAll('.layer-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.layer-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                mode = btn.dataset.mode;
+                const heatLegend = document.getElementById('heatLegend');
+                const terrainLegend = document.getElementById('terrainLegend');
+                if (mode === 'terrain') {
+                    heatLegend.style.display = 'none';
+                    terrainLegend.style.display = 'flex';
+                } else {
+                    terrainLegend.style.display = 'none';
+                    heatLegend.style.display = 'flex';
+                    document.getElementById('heatLabel').textContent = heatLabels[mode];
+                    document.getElementById('heatMax').textContent = 'peak: ' + (heatMax[mode] || 0);
+                }
+                draw();
+            });
+        });
+
         function resetView() {
             computeBounds();
             draw();
@@ -366,11 +487,10 @@
 
             if (found) {
                 let html = `<div class="tt-coord">Chunk (${found.chunkX}, ${found.chunkZ})</div>`;
-                if (IS_PERSONAL || !found.playerUsername) {
-                    // no per-chunk player name needed on personal map
-                } else {
+                if (!IS_PERSONAL && found.playerUsername) {
                     html += `<div class="tt-player">${found.playerUsername}</div>`;
                 }
+                html += `<div class="tt-biome">⛏ ${found.mined || 0} mined · 🧱 ${found.placed || 0} placed · ⏱ ${found.stay || 0} activity</div>`;
                 if (found.lastVisited) {
                     html += `<div class="tt-time">${found.lastVisited}</div>`;
                 }
@@ -410,6 +530,7 @@
                 for (const c of chunks) {
                     chunkMap.set(c.chunkX + ',' + c.chunkZ, c);
                 }
+                recomputeHeatMax();
                 resizeCanvas();
             } catch (err) {
                 console.error('Failed to load map data:', err);

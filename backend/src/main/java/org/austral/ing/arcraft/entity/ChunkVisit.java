@@ -45,6 +45,21 @@ public class ChunkVisit {
     @Column(name = "map_color_b")
     private int mapColorB = 100;
 
+    // Heatmap counters (accumulated per player per chunk).
+    @Column(name = "blocks_mined", nullable = false)
+    private long blocksMined = 0;
+
+    @Column(name = "blocks_placed", nullable = false)
+    private long blocksPlaced = 0;
+
+    // "Staying" intensity: incremented once per ~second the player spends in the chunk.
+    @Column(name = "stay_ticks", nullable = false)
+    private long stayTicks = 0;
+
+    // Surface height at the chunk centre — used to shade terrain relief on the web map.
+    @Column(name = "surface_y")
+    private int surfaceY = 0;
+
     @Column(nullable = false)
     private LocalDateTime firstVisited;
 

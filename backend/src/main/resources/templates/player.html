@@ -13,9 +13,16 @@
 
         <!-- Profile Header -->
         <div class="profile-header">
-            <div class="profile-avatar" th:text="${player.username.substring(0, 1).toUpperCase()}">S</div>
+            <img class="profile-avatar-img"
+                 th:src="${@skinService.face(player, 64)}"
+                 width="64" height="64" alt="" loading="lazy"/>
             <div class="profile-info">
-                <h1 th:text="${player.username}">Steve</h1>
+                <h1>
+                    <span th:text="${player.username}">Steve</span>
+                    <span class="player-title" th:each="t : ${titles}"
+                          th:classappend="${t.special} ? ' title-top' : ''" th:text="${t.text}"
+                          style="font-size:0.8rem;vertical-align:middle;">Title</span>
+                </h1>
                 <div class="meta">
                     <span th:if="${player.clan != null}" class="text-green" th:text="'[' + ${player.clan.tag} + '] ' + ${player.clan.name}">Clan</span>
                     <span th:if="${player.clan == null}" class="text-muted">No clan</span>
@@ -30,12 +37,16 @@
         <!-- Stats Cards -->
         <div class="stats-row" th:if="${stats != null}">
             <div class="stat-card">
-                <div class="label">Kills</div>
+                <div class="label">PvP Kills</div>
                 <div class="value green mono" th:text="${stats.kills}">0</div>
             </div>
             <div class="stat-card">
-                <div class="label">Deaths</div>
+                <div class="label">Deaths (total)</div>
                 <div class="value mono" th:text="${stats.deaths}">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">PvP Deaths</div>
+                <div class="value mono" th:text="${stats.pvpDeaths}">0</div>
             </div>
             <div class="stat-card">
                 <div class="label">K/D Ratio</div>
@@ -66,12 +77,20 @@
                 <div class="value aqua mono" th:text="${bowAccuracy + '%'}">0%</div>
             </div>
             <div class="stat-card">
-                <div class="label">Damage Dealt</div>
+                <div class="label">Damage Dealt (total)</div>
                 <div class="value mono" th:text="${T(java.lang.String).format('%.0f', stats.damageDealt)}">0</div>
             </div>
             <div class="stat-card">
-                <div class="label">Damage Received</div>
+                <div class="label">PvP Damage Dealt</div>
+                <div class="value green mono" th:text="${T(java.lang.String).format('%.0f', stats.pvpDamageDealt)}">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Damage Received (total)</div>
                 <div class="value mono" th:text="${T(java.lang.String).format('%.0f', stats.damageReceived)}">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">PvP Damage Received</div>
+                <div class="value mono" th:text="${T(java.lang.String).format('%.0f', stats.pvpDamageReceived)}">0</div>
             </div>
             <div class="stat-card">
                 <div class="label">Longest Shot</div>
@@ -108,7 +127,10 @@
                 <div class="panel-body">
                     <ul class="breakdown-list">
                         <li class="breakdown-item" th:each="b : ${topBlocksMined}">
-                            <span class="breakdown-name" th:text="${b.blockType.replace('minecraft:', '')}">diamond_ore</span>
+                            <span class="breakdown-name">
+                                <img class="mc-icon" th:src="${@iconService.blockIcon(b.blockType)}" alt="" loading="lazy" onerror="this.remove()"/>
+                                <span th:text="${@iconService.pretty(b.blockType)}">Diamond Ore</span>
+                            </span>
                             <span class="breakdown-value" th:text="${#numbers.formatInteger(b.mined, 1, 'COMMA')}">0</span>
                         </li>
                     </ul>
@@ -122,7 +144,10 @@
                 <div class="panel-body">
                     <ul class="breakdown-list">
                         <li class="breakdown-item" th:each="b : ${topBlocksPlaced}">
-                            <span class="breakdown-name" th:text="${b.blockType.replace('minecraft:', '')}">stone</span>
+                            <span class="breakdown-name">
+                                <img class="mc-icon" th:src="${@iconService.blockIcon(b.blockType)}" alt="" loading="lazy" onerror="this.remove()"/>
+                                <span th:text="${@iconService.pretty(b.blockType)}">Stone</span>
+                            </span>
                             <span class="breakdown-value" th:text="${#numbers.formatInteger(b.placed, 1, 'COMMA')}">0</span>
                         </li>
                     </ul>
@@ -136,7 +161,10 @@
                 <div class="panel-body">
                     <ul class="breakdown-list">
                         <li class="breakdown-item" th:each="i : ${topItemsCrafted}">
-                            <span class="breakdown-name" th:text="${i.itemType.replace('minecraft:', '')}">torch</span>
+                            <span class="breakdown-name">
+                                <img class="mc-icon" th:src="${@iconService.itemIcon(i.itemType)}" alt="" loading="lazy" onerror="this.remove()"/>
+                                <span th:text="${@iconService.pretty(i.itemType)}">Torch</span>
+                            </span>
                             <span class="breakdown-value" th:text="${#numbers.formatInteger(i.count, 1, 'COMMA')}">0</span>
                         </li>
                     </ul>
@@ -150,7 +178,11 @@
                 <div class="panel-body">
                     <ul class="breakdown-list">
                         <li class="breakdown-item" th:each="m : ${topMobsKilled}">
-                            <span class="breakdown-name" th:text="${m.mobType.replace('minecraft:', '')}">zombie</span>
+                            <span class="breakdown-name">
+                                <img class="mc-icon" th:src="${@iconService.mobIcon(m.mobType)}" alt="" loading="lazy"
+                                     onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'mc-emoji',textContent:'⚔'}))"/>
+                                <span th:text="${@iconService.pretty(m.mobType)}">Zombie</span>
+                            </span>
                             <span class="breakdown-value" th:text="${#numbers.formatInteger(m.count, 1, 'COMMA')}">0</span>
                         </li>
                     </ul>
