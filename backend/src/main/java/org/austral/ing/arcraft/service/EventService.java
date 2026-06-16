@@ -50,7 +50,8 @@ public class EventService {
         }).toList();
     }
 
-    public String createEvent(String title, String description, Instant startDate, Instant endDate) {
+    public String createEvent(String title, String description, Instant startDate, Instant endDate,
+                              Integer remindDaysBefore, boolean remindDuring) {
         if (title == null || title.isBlank()) {
             return "Title is required.";
         }
@@ -65,6 +66,8 @@ public class EventService {
         event.setDescription(description == null ? "" : description.trim());
         event.setStartDate(startDate);
         event.setEndDate(endDate);
+        event.setRemindDaysBefore(remindDaysBefore != null && remindDaysBefore > 0 ? remindDaysBefore : null);
+        event.setRemindDuring(remindDuring);
         event.setCreatedAt(Instant.now());
         eventRepository.save(event);
         return null;

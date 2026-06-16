@@ -201,6 +201,7 @@
                             <th>Result</th>
                             <th>Opponent</th>
                             <th class="text-right">Date</th>
+                            <th class="text-right"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -220,6 +221,9 @@
                                    th:text="${pvp.killer.username}">opponent</a>
                             </td>
                             <td class="num text-right" th:text="${pvp.endedAt.atZone(T(java.time.ZoneId).systemDefault()).toLocalDateTime().toString().replace('T', ' ').substring(0, 16)}">2026-01-01 12:00</td>
+                            <td class="text-right">
+                                <a class="btn-small" th:href="@{/pvp/{id}(id=${pvp.id})}">View hits →</a>
+                            </td>
                         </tr>
                     </tbody>
                 </table>

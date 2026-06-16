@@ -18,6 +18,12 @@ public interface PlayerRepository extends JpaRepository<Player, UUID> {
     long countByClan(Clan clan);
     List<Player> findByEmailIsNotNull();
 
+    // Players whose current verification code still needs its email dispatched.
+    List<Player> findByVerificationCodeIsNotNullAndVerificationSentFalse();
+
+    // Players with a verified email — recipients for event reminders.
+    List<Player> findByEmailVerifiedTrue();
+
     @Query("select p.clan.tag from Player p where p.username = :username")
     Optional<String> findClanTagByUsername(@Param("username") String username);
 }

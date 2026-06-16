@@ -55,6 +55,8 @@ public final class ArcraftEventHandler {
         final UUID mcUuid = player.getUUID();
         LOGGER.info("[ArCraft] PlayerLogin: {} ({})", username, mcUuid);
         DatabaseManager.submit(() -> upsertPlayer(username, mcUuid));
+        // After the player row exists, nudge them to register an email if they haven't.
+        DatabaseManager.submit(() -> EmailCommands.promptEmailIfNeeded(username));
     }
 
     @SubscribeEvent
@@ -121,7 +123,8 @@ public final class ArcraftEventHandler {
         if (amount <= 0) return;
         final String victimName = victim.getName().getString();
         final String attackerName = attackerPlayer.getName().getString();
-        DatabaseManager.submit(() -> recordPvpDamage(attackerName, victimName, amount));
+        final String weapon = itemKey(attackerPlayer.getMainHandItem());
+        DatabaseManager.submit(() -> recordPvpDamage(attackerName, victimName, amount, weapon));
     }
 
     @SubscribeEvent
@@ -447,23 +450,45 @@ public final class ArcraftEventHandler {
             incrementStat(c, victimId, "pvp_deaths", 1);
 
             UUID pvpEventId = UUID.randomUUID();
+            // Flush the buffered hits of this fight (recorded by onLivingDamage) into pvp_hit.
+            java.util.List<BufferedHit> fightHits = FIGHT_BUFFERS.remove(pairKey(killerId, victimId));
+            Timestamp started = (fightHits != null && !fightHits.isEmpty())
+                    ? fightHits.get(0).time() : Timestamp.from(when);
+
             try (PreparedStatement ps = c.prepareStatement(
                     "INSERT INTO pvp_event (id, killer_id, victim_id, started_at, ended_at) VALUES (?, ?, ?, ?, ?)")) {
                 ps.setObject(1, pvpEventId);
                 ps.setObject(2, killerId);
                 ps.setObject(3, victimId);
-                ps.setTimestamp(4, Timestamp.from(when));
+                ps.setTimestamp(4, started);
                 ps.setTimestamp(5, Timestamp.from(when));
                 ps.executeUpdate();
             }
             try (PreparedStatement ps = c.prepareStatement(
-                    "INSERT INTO pvp_hit (id, pvp_event_id, attacker_id, damage, weapon, hit_at) VALUES (?, ?, ?, 0, ?, ?)")) {
-                ps.setObject(1, UUID.randomUUID());
-                ps.setObject(2, pvpEventId);
-                ps.setObject(3, killerId);
-                ps.setString(4, weapon);
-                ps.setTimestamp(5, Timestamp.from(when));
-                ps.executeUpdate();
+                    "INSERT INTO pvp_hit (id, pvp_event_id, attacker_id, victim_id, damage, weapon, hit_at) VALUES (?, ?, ?, ?, ?, ?, ?)")) {
+                if (fightHits != null && !fightHits.isEmpty()) {
+                    for (BufferedHit h : fightHits) {
+                        ps.setObject(1, UUID.randomUUID());
+                        ps.setObject(2, pvpEventId);
+                        ps.setObject(3, h.attackerId());
+                        ps.setObject(4, h.victimId());
+                        ps.setFloat(5, h.damage());
+                        ps.setString(6, h.weapon());
+                        ps.setTimestamp(7, h.time());
+                        ps.addBatch();
+                    }
+                    ps.executeBatch();
+                } else {
+                    // No buffered hits (rare): record the killing blow alone.
+                    ps.setObject(1, UUID.randomUUID());
+                    ps.setObject(2, pvpEventId);
+                    ps.setObject(3, killerId);
+                    ps.setObject(4, victimId);
+                    ps.setFloat(5, 0f);
+                    ps.setString(6, weapon);
+                    ps.setTimestamp(7, Timestamp.from(when));
+                    ps.executeUpdate();
+                }
             }
             try (PreparedStatement ps = c.prepareStatement(
                     "INSERT INTO event_log (id, type, description, player_id, occurred_at) VALUES (?, 'PVP_KILL', ?, ?, ?)")) {
@@ -539,14 +564,39 @@ public final class ArcraftEventHandler {
         }
     }
 
-    // PvP-only damage accumulation (totals come from vanilla DAMAGE_DEALT/TAKEN).
-    private static void recordPvpDamage(String attackerName, String victimName, float amount) {
+    // --- PvP hit buffering (writer thread only) ---
+
+    private record BufferedHit(UUID attackerId, UUID victimId, float damage, String weapon, Timestamp time) {}
+
+    // Per-fight (unordered player pair) buffer of hits, flushed into pvp_hit when someone dies.
+    private static final java.util.Map<String, java.util.List<BufferedHit>> FIGHT_BUFFERS = new java.util.HashMap<>();
+
+    private static String pairKey(UUID a, UUID b) {
+        String x = a.toString(), y = b.toString();
+        return x.compareTo(y) <= 0 ? x + "|" + y : y + "|" + x;
+    }
+
+    /** Drop fights with no hit in the last 2 minutes (players disengaged without a kill). */
+    private static void purgeStaleFights(Timestamp now) {
+        long cutoff = now.getTime() - 120_000L;
+        FIGHT_BUFFERS.values().removeIf(list ->
+                list.isEmpty() || list.get(list.size() - 1).time().getTime() < cutoff);
+    }
+
+    // PvP-only damage accumulation (totals come from vanilla DAMAGE_DEALT/TAKEN) + hit buffering.
+    private static void recordPvpDamage(String attackerName, String victimName, float amount, String weapon) {
         Connection c = DatabaseManager.getConnection();
         try {
             UUID attackerId = resolvePlayerId(c, attackerName);
             UUID victimId = resolvePlayerId(c, victimName);
             if (attackerId != null) incrementStatF(c, attackerId, "pvp_damage_dealt", amount);
             if (victimId != null) incrementStatF(c, victimId, "pvp_damage_received", amount);
+            if (attackerId != null && victimId != null) {
+                Timestamp now = Timestamp.from(Instant.now());
+                FIGHT_BUFFERS.computeIfAbsent(pairKey(attackerId, victimId), k -> new java.util.ArrayList<>())
+                        .add(new BufferedHit(attackerId, victimId, amount, weapon, now));
+                purgeStaleFights(now);
+            }
         } catch (Exception e) {
             LOGGER.error("[ArCraft] PVP_DAMAGE: attacker={}, victim={}, result=error", attackerName, victimName, e);
         }

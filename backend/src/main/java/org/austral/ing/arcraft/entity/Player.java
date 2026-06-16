@@ -29,9 +29,20 @@ public class Player {
     @Column(nullable = false)
     private long coins = 0;
 
-    // Optional — used for event reminder emails. Cracked players may never set one.
+    // Optional — used for event reminder emails. Registered & verified in-game via /email.
     @Column
     private String email;
+
+    @Column(nullable = false)
+    private boolean emailVerified = false;
+
+    // Pending 6-digit verification code (null once verified), and whether the backend has
+    // already dispatched the verification email for the current code.
+    @Column
+    private String verificationCode;
+
+    @Column(nullable = false)
+    private boolean verificationSent = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "clan_id")

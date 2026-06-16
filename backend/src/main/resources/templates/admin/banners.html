@@ -46,6 +46,15 @@
                         <input type="datetime-local" id="endDate" name="endDate" required>
                     </div>
                     <div class="form-group">
+                        <label for="remindDaysBefore">Email reminder (days before)</label>
+                        <input type="number" id="remindDaysBefore" name="remindDaysBefore" min="0" placeholder="0 = off">
+                    </div>
+                    <div class="form-group form-check-group">
+                        <label class="check-label">
+                            <input type="checkbox" name="remindDuring" value="true"> Email when it starts
+                        </label>
+                    </div>
+                    <div class="form-group">
                         <button type="submit" class="btn-primary">Create Event</button>
                     </div>
                 </div>

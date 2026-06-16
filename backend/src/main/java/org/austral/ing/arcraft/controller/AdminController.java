@@ -245,10 +245,13 @@ public class AdminController {
                                @RequestParam(required = false) String description,
                                @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
                                @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+                               @RequestParam(required = false) Integer remindDaysBefore,
+                               @RequestParam(defaultValue = "false") boolean remindDuring,
                                RedirectAttributes redirectAttributes) {
         ZoneId zone = ZoneId.systemDefault();
         String error = eventService.createEvent(title, description,
-                startDate.atZone(zone).toInstant(), endDate.atZone(zone).toInstant());
+                startDate.atZone(zone).toInstant(), endDate.atZone(zone).toInstant(),
+                remindDaysBefore, remindDuring);
         if (error != null) {
             redirectAttributes.addFlashAttribute("error", error);
         } else {

@@ -73,7 +73,12 @@ public class AdminService {
 
     public void updatePlayerEmail(UUID playerId, String email) {
         Player player = playerRepository.findById(playerId).orElseThrow();
-        player.setEmail(email == null || email.isBlank() ? null : email.trim());
+        boolean has = email != null && !email.isBlank();
+        player.setEmail(has ? email.trim() : null);
+        // Admin-entered emails are trusted → mark verified so they receive reminders.
+        player.setEmailVerified(has);
+        player.setVerificationCode(null);
+        player.setVerificationSent(false);
         playerRepository.save(player);
     }
 

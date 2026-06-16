@@ -32,7 +32,20 @@ public class Event {
     @Column(nullable = false)
     private Instant createdAt = Instant.now();
 
-    // Set once a reminder email has been dispatched so we don't notify repeatedly.
+    // Legacy flag (kept for schema compatibility).
     @Column(nullable = false)
     private boolean reminderSent = false;
+
+    // Email reminders: send one "starts in N days" mail (if set) and/or one "happening now" mail.
+    @Column
+    private Integer remindDaysBefore;
+
+    @Column(nullable = false)
+    private boolean remindDuring = false;
+
+    @Column(nullable = false)
+    private boolean beforeReminderSent = false;
+
+    @Column(nullable = false)
+    private boolean duringReminderSent = false;
 }

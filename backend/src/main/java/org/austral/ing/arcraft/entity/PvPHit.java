@@ -25,6 +25,10 @@ public class PvPHit {
     @JoinColumn(name = "attacker_id", nullable = false)
     private Player attacker;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "victim_id")
+    private Player victim;
+
     @Column(nullable = false)
     private float damage;
 

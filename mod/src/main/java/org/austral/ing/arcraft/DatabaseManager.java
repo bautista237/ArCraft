@@ -193,6 +193,12 @@ public final class DatabaseManager {
                 ALTER TABLE player ADD COLUMN IF NOT EXISTS coins BIGINT NOT NULL DEFAULT 0
                 """);
 
+            // Email registration & verification (set in-game via /email, verified by code).
+            st.execute("ALTER TABLE player ADD COLUMN IF NOT EXISTS email VARCHAR(255)");
+            st.execute("ALTER TABLE player ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT FALSE");
+            st.execute("ALTER TABLE player ADD COLUMN IF NOT EXISTS verification_code VARCHAR(16)");
+            st.execute("ALTER TABLE player ADD COLUMN IF NOT EXISTS verification_sent BOOLEAN NOT NULL DEFAULT FALSE");
+
             st.execute("""
                 CREATE TABLE IF NOT EXISTS player_stats (
                     id UUID PRIMARY KEY,
@@ -324,6 +330,9 @@ public final class DatabaseManager {
 
             // Chunk surface height — lets the web map shade terrain like a Minecraft map.
             st.execute("ALTER TABLE chunk_visit ADD COLUMN IF NOT EXISTS surface_y INT DEFAULT 0");
+
+            // Per-hit recipient, so the web can show who received each PvP hit.
+            st.execute("ALTER TABLE pvp_hit ADD COLUMN IF NOT EXISTS victim_id UUID");
 
             // Server online-mode (premium vs cracked) drives which skin source the dashboard uses.
             st.execute("ALTER TABLE server_config ADD COLUMN IF NOT EXISTS online_mode BOOLEAN");
