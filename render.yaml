@@ -1,0 +1,44 @@
+# Render.com blueprint — deploys the ArCraft web dashboard + a free Postgres database.
+# Use it from the Render dashboard: New + → Blueprint → point at this repo.
+# Set the secret env vars (MP_ACCESS_TOKEN, MP_PUBLIC_KEY, GEMINI_API_KEY) in the dashboard
+# after the first deploy (they are marked sync:false so they're never stored in git).
+
+databases:
+  - name: arcraft-db
+    plan: free
+    databaseName: arcraft
+    user: arcraft
+
+services:
+  - type: web
+    name: arcraft
+    runtime: docker
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /login
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      # Public URL of this service — used in email links + MercadoPago return URLs.
+      # Set to your full https URL after the first deploy, e.g. https://arcraft.onrender.com
+      - key: ARCRAFT_BASE_URL
+        sync: false
+      # Postgres connection, wired from the managed database above.
+      - key: PGHOST
+        fromDatabase: { name: arcraft-db, property: host }
+      - key: PGPORT
+        fromDatabase: { name: arcraft-db, property: port }
+      - key: PGDATABASE
+        fromDatabase: { name: arcraft-db, property: database }
+      - key: PGUSER
+        fromDatabase: { name: arcraft-db, property: user }
+      - key: PGPASSWORD
+        fromDatabase: { name: arcraft-db, property: password }
+      # Secrets — fill these in the Render dashboard (Environment tab).
+      - key: MP_ACCESS_TOKEN
+        sync: false
+      - key: MP_PUBLIC_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false

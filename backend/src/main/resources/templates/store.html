@@ -14,6 +14,17 @@
             font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #fb923c;
             font-size: 1.1rem;
         }
+        .coin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+        .coin-pack {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px; padding: 16px; text-align: center;
+        }
+        .coin-pack .coin-amount {
+            font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #fb923c; font-size: 1.25rem;
+        }
+        .coin-pack .coin-price {
+            font-family: 'JetBrains Mono', monospace; color: #9ca3af; font-size: 0.85rem; margin: 6px 0 12px;
+        }
     </style>
 </head>
 <body>
@@ -29,8 +40,35 @@
         <div class="alert alert-success" th:if="${success}" th:text="${success}" style="margin-top:16px;"></div>
 
         <p class="text-muted" style="margin:14px 0 18px;font-size:0.85rem;">
-            Earn coins through achievements and in-game work, then spend them on titles and cosmetics.
+            Earn coins through achievements and in-game work, buy them below, then spend them on titles and cosmetics.
         </p>
+
+        <!-- Buy coins with MercadoPago -->
+        <div class="panel" style="margin-bottom:24px;">
+            <div class="panel-header">💳 Buy coins</div>
+            <div class="panel-body">
+                <p class="text-muted" th:if="${mpEnabled}" style="font-size:0.82rem;margin:0 0 16px;">
+                    Top up instantly with MercadoPago. <span style="color:#fb923c;">Test mode</span> — use a
+                    MercadoPago test card; no real money is charged.
+                </p>
+                <p class="text-muted" th:unless="${mpEnabled}" style="font-size:0.82rem;margin:0 0 16px;">
+                    Coin purchases are not configured on this server yet.
+                </p>
+                <div class="coin-grid">
+                    <div class="coin-pack" th:each="cp : ${coinPackages}">
+                        <div class="coin-amount">🪙 <span th:text="${#numbers.formatInteger(cp.coins, 1, 'COMMA')}">0</span></div>
+                        <div class="coin-price">
+                            <span th:text="${currency}">ARS</span>
+                            <span th:text="${#numbers.formatDecimal(cp.price, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+                        </div>
+                        <form th:action="@{/store/coins/checkout}" method="post">
+                            <input type="hidden" name="pack" th:value="${cp.slug}"/>
+                            <button type="submit" class="btn-small btn-green" th:disabled="${!mpEnabled}">Buy</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- How to earn coins -->
         <div class="panel" style="margin-bottom:24px;">

@@ -1,5 +1,6 @@
 package org.austral.ing.arcraft.service;
 
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.austral.ing.arcraft.entity.Event;
 import org.austral.ing.arcraft.entity.Player;
@@ -10,11 +11,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -40,9 +43,13 @@ public class EmailService {
     private final EventRepository eventRepository;
     private final PlayerRepository playerRepository;
     private final ObjectProvider<JavaMailSender> mailSenderProvider;
+    private final SpringTemplateEngine templateEngine;
 
     @Value("${spring.mail.username:}")
     private String fromAddress;
+
+    @Value("${arcraft.app.base-url:http://localhost:8080}")
+    private String baseUrl;
 
     // ── Verification codes (every 30s) ───────────────────────────────────────
     @Scheduled(fixedRate = 30_000L)
@@ -52,11 +59,12 @@ public class EmailService {
         if (sender == null) return;
         for (Player p : playerRepository.findByVerificationCodeIsNotNullAndVerificationSentFalse()) {
             if (p.getEmail() == null || p.getEmail().isBlank()) { p.setVerificationSent(true); continue; }
-            boolean ok = send(sender, p.getEmail(), "[ArCraft] Your verification code",
-                    "Hi " + p.getUsername() + ",\n\n"
-                    + "Your ArCraft email verification code is: " + p.getVerificationCode() + "\n\n"
-                    + "In-game, run:  /email verify " + p.getVerificationCode() + "\n\n"
-                    + "If you didn't request this, you can ignore this email.\n— ArCraft");
+            Context ctx = new Context();
+            ctx.setVariable("username", p.getUsername());
+            ctx.setVariable("code", p.getVerificationCode());
+            ctx.setVariable("baseUrl", baseUrl);
+            boolean ok = sendHtml(sender, p.getEmail(), "[ArCraft] Your verification code",
+                    templateEngine.process("email/verification", ctx));
             p.setVerificationSent(true); // mark attempted either way so we don't loop
             playerRepository.save(p);
             if (ok) log.info("[ArCraft] Sent verification code to {} ({})", p.getUsername(), p.getEmail());
@@ -98,23 +106,29 @@ public class EmailService {
     }
 
     private void blast(JavaMailSender sender, List<Player> recipients, String subject, Event ev, String when) {
-        String body = "The event \"" + ev.getTitle() + "\" " + when + ".\n\n"
-                + (ev.getDescription() == null || ev.getDescription().isBlank() ? "" : ev.getDescription() + "\n\n")
-                + "See you on the server!\n— ArCraft";
         int sent = 0;
         for (Player p : recipients) {
-            if (p.getEmail() != null && !p.getEmail().isBlank() && send(sender, p.getEmail(), subject, body)) sent++;
+            if (p.getEmail() == null || p.getEmail().isBlank()) continue;
+            Context ctx = new Context();
+            ctx.setVariable("username", p.getUsername());
+            ctx.setVariable("title", ev.getTitle());
+            ctx.setVariable("when", when);
+            ctx.setVariable("description", ev.getDescription());
+            ctx.setVariable("baseUrl", baseUrl);
+            if (sendHtml(sender, p.getEmail(), subject, templateEngine.process("email/event-reminder", ctx))) sent++;
         }
         log.info("[ArCraft] Event reminder '{}' sent to {} recipients", ev.getTitle(), sent);
     }
 
-    private boolean send(JavaMailSender sender, String to, String subject, String body) {
+    /** Sends an HTML email (rendered from a Thymeleaf template). */
+    private boolean sendHtml(JavaMailSender sender, String to, String subject, String html) {
         try {
-            SimpleMailMessage msg = new SimpleMailMessage();
-            if (fromAddress != null && !fromAddress.isBlank()) msg.setFrom(fromAddress);
-            msg.setTo(to);
-            msg.setSubject(subject);
-            msg.setText(body);
+            MimeMessage msg = sender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(msg, "UTF-8");
+            if (fromAddress != null && !fromAddress.isBlank()) helper.setFrom(fromAddress, "ArCraft");
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(html, true); // true = HTML
             sender.send(msg);
             return true;
         } catch (Exception e) {

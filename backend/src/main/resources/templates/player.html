@@ -191,6 +191,76 @@
             </div>
         </div>
 
+        <!-- PvP Analytics -->
+        <div class="panel" style="margin-top: 24px;" th:if="${pvp != null and pvp.totalFights > 0}">
+            <div class="panel-header">⚔️ PvP Analysis</div>
+            <div class="panel-body">
+                <div class="stats-row" style="margin-bottom:18px;">
+                    <div class="stat-card">
+                        <div class="label">Total Fights</div>
+                        <div class="value mono" th:text="${pvp.totalFights}">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label">PvP Kills</div>
+                        <div class="value green mono" th:text="${pvp.kills}">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label">PvP Deaths</div>
+                        <div class="value orange mono" th:text="${pvp.deaths}">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label">Win Rate</div>
+                        <div class="value aqua mono" th:text="${T(java.lang.String).format('%.0f%%', pvp.winRate)}">0%</div>
+                    </div>
+                </div>
+                <div class="stats-row" style="margin-bottom:6px;">
+                    <div class="stat-card" th:if="${pvp.nemesis != null}">
+                        <div class="label">☠️ Nemesis (killed you most)</div>
+                        <div class="value">
+                            <a class="player-link" th:href="@{/players/{u}(u=${pvp.nemesis.opponent.username})}"
+                               th:text="${pvp.nemesis.opponent.username}">opponent</a>
+                            <span class="text-muted mono" style="font-size:0.8rem;"
+                                  th:text="'×' + ${pvp.nemesis.deathsTo}">×0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card" th:if="${pvp.favoriteVictim != null}">
+                        <div class="label">🎯 Favorite victim (you killed most)</div>
+                        <div class="value">
+                            <a class="player-link" th:href="@{/players/{u}(u=${pvp.favoriteVictim.opponent.username})}"
+                               th:text="${pvp.favoriteVictim.opponent.username}">opponent</a>
+                            <span class="text-muted mono" style="font-size:0.8rem;"
+                                  th:text="'×' + ${pvp.favoriteVictim.killsAgainst}">×0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Head-to-head records -->
+                <table class="data-table" style="margin-top:14px;" th:if="${!#lists.isEmpty(pvp.matchups)}">
+                    <thead>
+                        <tr>
+                            <th>Opponent</th>
+                            <th class="text-right">Kills</th>
+                            <th class="text-right">Deaths</th>
+                            <th class="text-right">Fights</th>
+                            <th class="text-right">Win&nbsp;%</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="m : ${pvp.matchups}">
+                            <td>
+                                <a class="player-link" th:href="@{/players/{u}(u=${m.opponent.username})}"
+                                   th:text="${m.opponent.username}">opponent</a>
+                            </td>
+                            <td class="num text-right text-green" th:text="${m.killsAgainst}">0</td>
+                            <td class="num text-right text-red" th:text="${m.deathsTo}">0</td>
+                            <td class="num text-right" th:text="${m.total}">0</td>
+                            <td class="num text-right" th:text="${T(java.lang.String).format('%.0f%%', m.winRate)}">0%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- PvP History -->
         <div class="panel" style="margin-top: 24px;">
             <div class="panel-header">PvP History</div>

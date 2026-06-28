@@ -82,20 +82,34 @@ public final class EmailCommands {
     private static int verify(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
         final String username = player.getName().getString();
-        final String code = StringArgumentType.getString(ctx, "code").trim();
+        final String code = StringArgumentType.getString(ctx, "code");
         final CommandSourceStack src = ctx.getSource();
         DatabaseManager.submit(() -> {
             Connection c = DatabaseManager.getConnection();
             try {
                 String stored = null;
+                boolean alreadyVerified = false;
+                // Read from a fresh autocommit statement so we never compare against a stale
+                // snapshot (the backend may have touched this row in the shared H2 file).
                 try (PreparedStatement ps = c.prepareStatement(
-                        "SELECT verification_code FROM player WHERE username=?")) {
+                        "SELECT verification_code, email_verified FROM player WHERE username=?")) {
                     ps.setString(1, username);
                     try (ResultSet rs = ps.executeQuery()) {
-                        if (rs.next()) stored = rs.getString(1);
+                        if (rs.next()) {
+                            stored = rs.getString(1);
+                            alreadyVerified = rs.getBoolean(2);
+                        }
                     }
                 }
-                final boolean ok = stored != null && stored.equals(code);
+                // Normalize both sides: trim, and reduce to digits only. Codes are 6 digits,
+                // but pasted emails can carry stray whitespace/zero-width chars, and a CHAR
+                // column (vs VARCHAR) would right-pad with spaces — all of which broke equals().
+                final String enteredNorm = normalize(code);
+                final String storedNorm = normalize(stored);
+                final boolean ok = !storedNorm.isEmpty() && storedNorm.equals(enteredNorm);
+                final boolean wasVerified = alreadyVerified;
+                LOGGER.info("[ArCraft] /email verify user={} entered='{}'(norm='{}') stored='{}'(norm='{}') verified={} -> {}",
+                        username, code, enteredNorm, stored, storedNorm, wasVerified, ok ? "OK" : "MISMATCH");
                 if (ok) {
                     try (PreparedStatement ps = c.prepareStatement(
                             "UPDATE player SET email_verified=TRUE, verification_code=NULL WHERE username=?")) {
@@ -106,10 +120,15 @@ public final class EmailCommands {
                 MinecraftServer server = ArcraftMod.SERVER;
                 if (server != null) server.execute(() -> {
                     ServerPlayer p = server.getPlayerList().getPlayerByName(username);
-                    if (p != null) {
-                        p.sendSystemMessage(ok
-                                ? Component.literal("✔ Email verified! You'll now get event reminders.").withStyle(ChatFormatting.GREEN)
-                                : Component.literal("✘ Wrong or expired code. Run /email <address> to get a new one.").withStyle(ChatFormatting.RED));
+                    if (p == null) return;
+                    if (ok) {
+                        p.sendSystemMessage(Component.literal("✔ Email verified! You'll now get event reminders.").withStyle(ChatFormatting.GREEN));
+                    } else if (storedNorm.isEmpty() && wasVerified) {
+                        p.sendSystemMessage(Component.literal("✔ Your email is already verified — nothing to do.").withStyle(ChatFormatting.GREEN));
+                    } else if (storedNorm.isEmpty()) {
+                        p.sendSystemMessage(Component.literal("✘ No pending code. Run /email <address> to request one.").withStyle(ChatFormatting.RED));
+                    } else {
+                        p.sendSystemMessage(Component.literal("✘ Wrong code. Make sure you typed the latest code from your most recent email.").withStyle(ChatFormatting.RED));
                     }
                 });
             } catch (Exception e) {
@@ -117,6 +136,11 @@ public final class EmailCommands {
             }
         });
         return 1;
+    }
+
+    /** Trim, drop everything that isn't a digit. Returns "" for null. */
+    private static String normalize(String s) {
+        return s == null ? "" : s.trim().replaceAll("\\D", "");
     }
 
     /** On join, nudge players who don't have a verified email yet. */

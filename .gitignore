@@ -15,6 +15,11 @@ ARCRAFT_INFO.md
 # OS files
 .DS_Store
 
+# Secrets (MercadoPago / Gemini / SMTP)
+application-secret.properties
+backend/application-secret.properties
+*-secret.properties
+
 # H2 database (runtime data)
 *.mv.db
 *.lock.db
@@ -25,3 +30,6 @@ mc-server/
 # Generated context/analysis docs
 DIFERENCIAS_CODIGO_VS_REPOSITORIO.txt
 contexto_arcraft.txt
+
+# H2 trace logs
+*.trace.db

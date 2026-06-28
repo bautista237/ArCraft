@@ -61,4 +61,56 @@ public class PlayerProfileService {
     public List<PvPEvent> getRecentPvP(Player player) {
         return pvpEventRepository.findByKillerOrVictimOrderByEndedAtDesc(player, player);
     }
+
+    // ── PvP analytics ────────────────────────────────────────
+
+    /** Head-to-head record against a single opponent. */
+    public record Matchup(Player opponent, long killsAgainst, long deathsTo) {
+        public long total() { return killsAgainst + deathsTo; }
+        public double winRate() { return total() == 0 ? 0 : (double) killsAgainst / total() * 100.0; }
+    }
+
+    /** Aggregated PvP picture for a player's profile. */
+    public record PvpAnalytics(
+            long totalFights, long kills, long deaths, double winRate,
+            Matchup nemesis,      // opponent who killed this player the most
+            Matchup favoriteVictim, // opponent this player killed the most
+            List<Matchup> matchups) {}
+
+    public PvpAnalytics getPvpAnalytics(Player player) {
+        List<PvPEvent> events = pvpEventRepository.findByKillerOrVictimOrderByEndedAtDesc(player, player);
+
+        // opponentId -> [killsAgainst, deathsTo], plus a reference to the opponent Player
+        java.util.Map<java.util.UUID, long[]> tally = new java.util.HashMap<>();
+        java.util.Map<java.util.UUID, Player> opponents = new java.util.HashMap<>();
+        long kills = 0, deaths = 0;
+        for (PvPEvent ev : events) {
+            Player killer = ev.getKiller();
+            Player victim = ev.getVictim();
+            if (killer == null || victim == null) continue;
+            boolean iAmKiller = killer.getId().equals(player.getId());
+            Player opp = iAmKiller ? victim : killer;
+            if (opp == null || opp.getId().equals(player.getId())) continue;
+            long[] rec = tally.computeIfAbsent(opp.getId(), k -> new long[2]);
+            opponents.putIfAbsent(opp.getId(), opp);
+            if (iAmKiller) { rec[0]++; kills++; } else { rec[1]++; deaths++; }
+        }
+
+        List<Matchup> matchups = new java.util.ArrayList<>();
+        for (var e : tally.entrySet()) {
+            matchups.add(new Matchup(opponents.get(e.getKey()), e.getValue()[0], e.getValue()[1]));
+        }
+        matchups.sort(Comparator.comparingLong(Matchup::total).reversed());
+
+        Matchup nemesis = matchups.stream()
+                .filter(m -> m.deathsTo() > 0)
+                .max(Comparator.comparingLong(Matchup::deathsTo)).orElse(null);
+        Matchup favoriteVictim = matchups.stream()
+                .filter(m -> m.killsAgainst() > 0)
+                .max(Comparator.comparingLong(Matchup::killsAgainst)).orElse(null);
+
+        long total = kills + deaths;
+        double winRate = total == 0 ? 0 : (double) kills / total * 100.0;
+        return new PvpAnalytics(events.size(), kills, deaths, winRate, nemesis, favoriteVictim, matchups);
+    }
 }

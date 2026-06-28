@@ -45,6 +45,7 @@ public class PlayerController {
         model.addAttribute("topItemsCrafted", profileService.getTopItemsCrafted(player, 5));
         model.addAttribute("topMobsKilled", profileService.getTopMobsKilled(player, 5));
         model.addAttribute("pvpHistory", profileService.getRecentPvP(player));
+        model.addAttribute("pvp", profileService.getPvpAnalytics(player));
 
         return "player";
     }

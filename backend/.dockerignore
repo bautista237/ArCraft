@@ -1,0 +1,5 @@
+target/
+*.mv.db
+*.lock.db
+application-secret.properties
+.git

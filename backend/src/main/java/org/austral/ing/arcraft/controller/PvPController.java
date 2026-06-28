@@ -36,6 +36,13 @@ public class PvPController {
                           String weaponName, String weaponIcon, boolean hasWeaponIcon,
                           String time) {}
 
+    /** Per-fighter combat summary for the encounter. */
+    public record FighterStats(Player player, long hits, float totalDamage,
+                               float biggestHit, float avgHit, float dps) {}
+
+    /** Weapon usage across the whole encounter. */
+    public record WeaponStat(String name, String icon, boolean hasIcon, long hits, float totalDamage) {}
+
     @GetMapping("/pvp/{eventId}")
     public String pvpEncounter(@PathVariable UUID eventId, Model model, RedirectAttributes ra) {
         Optional<PvPEvent> evOpt = pvpEventRepository.findById(eventId);
@@ -69,10 +76,43 @@ public class PvPController {
         long durationSec = (ev.getStartedAt() != null && ev.getEndedAt() != null)
                 ? Math.max(0, java.time.Duration.between(ev.getStartedAt(), ev.getEndedAt()).getSeconds()) : 0;
 
+        // ── Combat breakdown: per-fighter totals + weapon usage ──
+        java.util.Map<UUID, float[]> dmgByAttacker = new java.util.LinkedHashMap<>(); // [hits, total, biggest]
+        java.util.Map<UUID, Player> attackerRef = new java.util.HashMap<>();
+        java.util.Map<String, WeaponStat> weapons = new java.util.LinkedHashMap<>();
+        float totalDamage = 0;
+        for (HitView h : hitViews) {
+            totalDamage += h.damage();
+            if (h.attacker() != null) {
+                attackerRef.putIfAbsent(h.attacker().getId(), h.attacker());
+                float[] agg = dmgByAttacker.computeIfAbsent(h.attacker().getId(), k -> new float[3]);
+                agg[0] += 1;
+                agg[1] += h.damage();
+                agg[2] = Math.max(agg[2], h.damage());
+            }
+            WeaponStat prev = weapons.get(h.weaponName());
+            long wHits = (prev == null ? 0 : prev.hits()) + 1;
+            float wDmg = (prev == null ? 0 : prev.totalDamage()) + h.damage();
+            weapons.put(h.weaponName(), new WeaponStat(h.weaponName(), h.weaponIcon(), h.hasWeaponIcon(), wHits, wDmg));
+        }
+        List<FighterStats> fighters = new ArrayList<>();
+        for (var e : dmgByAttacker.entrySet()) {
+            float[] agg = e.getValue();
+            float avg = agg[0] > 0 ? agg[1] / agg[0] : 0;
+            float dps = durationSec > 0 ? agg[1] / durationSec : agg[1];
+            fighters.add(new FighterStats(attackerRef.get(e.getKey()), (long) agg[0], agg[1], agg[2], avg, dps));
+        }
+        fighters.sort((a, b) -> Float.compare(b.totalDamage(), a.totalDamage()));
+        List<WeaponStat> weaponStats = new ArrayList<>(weapons.values());
+        weaponStats.sort((a, b) -> Long.compare(b.hits(), a.hits()));
+
         model.addAttribute("event", ev);
         model.addAttribute("hits", hitViews);
         model.addAttribute("totalHits", hitViews.size());
         model.addAttribute("durationSec", durationSec);
+        model.addAttribute("totalDamage", totalDamage);
+        model.addAttribute("fighters", fighters);
+        model.addAttribute("weaponStats", weaponStats);
         return "pvp-detail";
     }
 }

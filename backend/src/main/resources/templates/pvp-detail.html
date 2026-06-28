@@ -65,6 +65,61 @@
             </div>
         </div>
 
+        <!-- Combat breakdown -->
+        <div class="panel" style="margin-bottom:24px;" th:if="${!#lists.isEmpty(fighters)}">
+            <div class="panel-header">Combat Breakdown</div>
+            <div class="panel-body">
+                <div style="text-align:center;color:#a3a3a3;font-size:0.85rem;margin-bottom:16px;">
+                    Total damage dealt: <strong class="mono" style="color:#f87171;"
+                        th:text="${T(java.lang.String).format('%.1f', totalDamage)}">0</strong>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Fighter</th>
+                            <th class="text-right">Hits</th>
+                            <th class="text-right">Damage</th>
+                            <th class="text-right">Biggest</th>
+                            <th class="text-right">Avg/hit</th>
+                            <th class="text-right">DPS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="f : ${fighters}">
+                            <td>
+                                <a class="player-link" th:if="${f.player != null}"
+                                   th:href="@{/players/{u}(u=${f.player.username})}" th:text="${f.player.username}">Fighter</a>
+                            </td>
+                            <td class="num text-right" th:text="${f.hits}">0</td>
+                            <td class="num text-right text-red" th:text="${T(java.lang.String).format('%.1f', f.totalDamage)}">0</td>
+                            <td class="num text-right" th:text="${T(java.lang.String).format('%.1f', f.biggestHit)}">0</td>
+                            <td class="num text-right" th:text="${T(java.lang.String).format('%.1f', f.avgHit)}">0</td>
+                            <td class="num text-right" th:text="${T(java.lang.String).format('%.1f', f.dps)}">0</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Weapons used -->
+                <table class="data-table" style="margin-top:16px;" th:if="${!#lists.isEmpty(weaponStats)}">
+                    <thead>
+                        <tr><th>Weapon</th><th class="text-right">Hits</th><th class="text-right">Damage</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="w : ${weaponStats}">
+                            <td>
+                                <span class="hit-weapon">
+                                    <img th:if="${w.hasIcon}" th:src="${w.icon}" alt="" loading="lazy" onerror="this.remove()"/>
+                                    <span th:text="${w.name}">Weapon</span>
+                                </span>
+                            </td>
+                            <td class="num text-right" th:text="${w.hits}">0</td>
+                            <td class="num text-right text-red" th:text="${T(java.lang.String).format('%.1f', w.totalDamage)}">0</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- Hit-by-hit -->
         <div class="panel">
             <div class="panel-header">Hit History</div>

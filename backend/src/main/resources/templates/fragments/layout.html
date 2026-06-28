@@ -13,6 +13,7 @@
         <a th:href="@{/map}" th:classappend="${activePage == 'map'} ? 'active'">Map</a>
         <a th:href="@{/clans}" th:classappend="${activePage == 'clans'} ? 'active'">Clans</a>
         <a th:href="@{/store}" th:classappend="${activePage == 'store'} ? 'active'">Store</a>
+        <a th:href="@{/assistant}" th:classappend="${activePage == 'assistant'} ? 'active'">Assistant</a>
         <a th:href="@{/admin}" th:classappend="${activePage == 'admin'} ? 'active'"
            sec:authorize="hasRole('ROLE_ADMIN')">Admin</a>
     </nav>

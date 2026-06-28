@@ -42,12 +42,13 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/login", "/css/**", "/js/**", "/images/**").permitAll()
                 .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
+                .requestMatchers("/store/coins/webhook").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .headers(headers -> headers.frameOptions(frame -> frame.disable()))
-            .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
+            .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**", "/store/coins/webhook"))
             .formLogin(form -> form
                 .loginPage("/login")
                 .defaultSuccessUrl("/dashboard", true)
