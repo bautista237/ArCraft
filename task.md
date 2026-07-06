@@ -1,11 +1,13 @@
 # ArCraft — Objetivos actuales del proyecto
 
-> Índice maestro. Hay **2 objetivos pendientes**. Cada uno tiene su archivo `.md` con TODAS las
-> decisiones finales de cómo hacerlo. Este archivo los nombra y vuelca el conocimiento transversal
-> de la sesión para que nada se pierda. **Nada de esto está implementado todavía** — es plan.
+> Índice maestro. Cada objetivo tiene su archivo `.md` con las decisiones finales.
 >
-> Estado del código: rama `main` = build de **dos procesos** que **funciona y está verificado**
-> (es el fallback del final). Rama `inprocess-web` = donde va la reescritura (objetivo 2).
+> **ESTADO (jul-2026): el objetivo 2 (single-jar) está IMPLEMENTADO Y VERIFICADO** en la rama
+> `inprocess-web` (QA completo en server real: upgrade sin pérdida + instalación limpia).
+> Documentación del nuevo codebase: **`ARCHITECTURE.md`**. Presentación técnica:
+> **`TECHNICAL_EXPLANATION.md`**. Falta: objetivo 1 (deploy en Oracle Cloud — requiere crear la
+> cuenta/VM, ver `DEPLOY.md` §3 actualizado para single-jar).
+> Rama `main` = build viejo de dos procesos, se conserva como fallback.
 
 ---
 

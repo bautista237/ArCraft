@@ -78,26 +78,48 @@ pérdida, mod-list con logo, etc. Se hace **sobre la VM ya deployada**, sin toca
 
 ---
 
-## 3. Cómo deployar en Oracle Cloud Always Free (build actual, dos procesos)
+## 3. Cómo deployar en Oracle Cloud Always Free (single-jar — versión actual)
 
-Igual que la laptop, pero en una VM con IP pública. La H2 se comparte porque ambos corren en la
-misma carpeta.
+> **ACTUALIZACIÓN**: el objetivo 2 (single-jar in-process) ya está implementado y verificado.
+> El deploy ahora es UN solo proceso: el servidor de Minecraft con el jar de ArCraft en `mods/`.
+> Ya no existe el backend separado ni `start.sh`/`stop.sh`.
 
 1. **Crear la VM**: Oracle Cloud → Compute → Instance → shape **VM.Standard.A1.Flex**
    (2 OCPU / 12 GB) o AMD micro si A1 no hay. SO: Ubuntu 22.04/24.04 LTS (ARM).
 2. **Abrir puertos** en la Security List / NSG de la VCN: `25565` (Minecraft), `8080` (web).
    Además en la VM: `sudo iptables`/`ufw` para 25565 y 8080 (Oracle trae iptables restrictivo).
-3. **Instalar Java 21** (Temurin/OpenJDK ARM64) y `screen`/`tmux`.
-4. **Subir el server**: la carpeta `arcraft-test-server/` (server MC + `arcraft-web/arcraft-backend.jar`)
-   vía `scp`/`rsync`. Copiar también `application.properties` (secrets — **NO** va al repo).
-5. **`arcraft.app.base-url`**: ponerlo en `http://<IP-pública>:8080` (o un dominio si tenés).
-   Esto arregla los links de los mails y las `back_urls` de MercadoPago.
-6. **Arrancar**: `SRV=/ruta/al/server ./start.sh` (levanta backend, espera "Started
-   ArcraftApplication", luego el server MC). Idealmente dentro de `tmux` o como servicio `systemd`.
-7. **Verificar**: `http://<IP-pública>:8080` desde otra red, y conectarse al MC en `<IP>:25565`.
+3. **Instalar Java 21** (Temurin/OpenJDK ARM64).
+4. **Instalar NeoForge 21.1** (installer `--installServer`) y aceptar `eula.txt`.
+5. **Subir el jar**: `mod/build/libs/arcraft-1.0.0-all.jar` → `mods/`. Si venís del server
+   viejo, subí también su `arcraft-data.mv.db` (raíz) y `application.properties`: el primer
+   arranque migra la DB a `arcraft/` e importa los secrets al TOML automáticamente.
+6. **Primer arranque**: `./run.sh nogui` (mejor bajo `tmux` o systemd). Se crean
+   `config/arcraft-common.toml` y `arcraft/`. Editar el TOML: `[web] baseUrl =
+   "http://<IP-pública>:8080"` (links de mails + back_urls de MercadoPago) y las credenciales
+   de mail/MercadoPago/Gemini si es instalación limpia. Reiniciar.
+7. **Verificar**: `http://<IP-pública>:8080` desde otra red (login `admin/admin` → cambiarla),
+   y conectarse al MC en `<IP>:25565`.
 
-> **Seguridad al exponer a internet**: `spring.h2.console.enabled=false` (ya está en el
-> `application.properties` del server). Los secrets viven solo en ese archivo, fuera del repo.
+> **Seguridad**: los secrets viven SOLO en el TOML de la VM (nunca en el repo). Cambiar la
+> contraseña del admin seed. No hay H2 console en este stack.
+
+### Unidad systemd sugerida (auto-arranque)
+```ini
+# /etc/systemd/system/arcraft.service
+[Unit]
+Description=ArCraft Minecraft server (+ embedded web dashboard)
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/arcraft-server
+ExecStart=/home/ubuntu/arcraft-server/run.sh nogui
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+```
+`sudo systemctl enable --now arcraft` y listo: sobrevive reinicios de la VM.
 
 ---
 
