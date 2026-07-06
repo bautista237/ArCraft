@@ -94,10 +94,12 @@ def webStack = [
         'org.eclipse.jetty.websocket:websocket-core-server:11.0.25',
         'org.eclipse.jetty.websocket:websocket-core-common:11.0.25',
         'org.eclipse.jetty.websocket:websocket-servlet:11.0.25',
-        // Templates
+        // Templates (Thymeleaf's expression language is OGNL, which needs javassist)
         'org.thymeleaf:thymeleaf:3.1.3.RELEASE',
         'org.attoparser:attoparser:2.0.7.RELEASE',
         'org.unbescape:unbescape:1.1.6.RELEASE',
+        'ognl:ognl:3.3.4',
+        'org.javassist:javassist:3.29.0-GA',
         // JSON
         'com.fasterxml.jackson.core:jackson-databind:2.18.2',
         'com.fasterxml.jackson.core:jackson-core:2.18.2',

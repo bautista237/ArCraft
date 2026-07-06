@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Dashboard — ArCraft</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+    <div th:replace="~{fragments/layout :: navbar('dashboard')}"></div>
+
+    <main class="page-content">
+
+        <!-- Event Banners -->
+        <div class="banner-stack" th:if="${!#lists.isEmpty(banners)}">
+            <div th:each="ev : ${banners}"
+                 class="event-banner"
+                 th:classappend="${ev.upcoming} ? 'upcoming' : ''">
+                <div class="banner-mark" th:text="${ev.upcoming} ? '📅' : '🎉'">🎉</div>
+                <div class="banner-body">
+                    <div class="banner-title">
+                        <span th:text="${ev.title}">Event Title</span>
+                        <span class="banner-state live" th:unless="${ev.upcoming}">Live now</span>
+                        <span class="banner-state soon" th:if="${ev.upcoming}">Upcoming</span>
+                    </div>
+                    <div class="banner-desc" th:if="${ev.description != null and !ev.description.isEmpty()}" th:text="${ev.description}">Description</div>
+                    <div class="banner-dates">
+                        <span th:if="${ev.upcoming}"
+                              th:text="${(ev.startsInDays == 1 ? 'Starts in 1 day' : 'Starts in ' + ev.startsInDays + ' days')}">Starts soon</span>
+                        <span th:unless="${ev.upcoming}"
+                              th:text="${(ev.daysLeft == 1 ? '1 day remaining' : ev.daysLeft + ' days remaining')}">N days remaining</span>
+                        <span> · ends </span>
+                        <span th:text="${ev.endLabel}">Jun 20</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="page-title">Server Overview</h2>
+
+        <!-- Stats Cards -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="label">Total Players</div>
+                <div class="value green" th:text="${totalPlayers}">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Total PvP Kills</div>
+                <div class="value aqua" th:text="${totalKills}">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Total Mobs Killed</div>
+                <div class="value orange" th:text="${totalMobsKilled}">0</div>
+            </div>
+        </div>
+
+        <!-- Two-column grid -->
+        <div class="dashboard-grid">
+
+            <!-- Top 5 Killers -->
+            <div class="panel">
+                <div class="panel-header">Top 5 — PvP Kills</div>
+                <div class="panel-body">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Player</th>
+                                <th class="text-right">Kills</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="s, iter : ${topKillers}">
+                                <td class="rank" th:text="${iter.index + 1}">1</td>
+                                <td>
+                                    <span th:replace="~{fragments/layout :: playerCell(${s.player}, null)}"></span>
+                                </td>
+                                <td class="num text-right" th:text="${s.kills}">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="empty-state" th:if="${#lists.isEmpty(topKillers)}">No data yet.</div>
+                </div>
+            </div>
+
+            <!-- Recent Events -->
+            <div class="panel">
+                <div class="panel-header">Recent Events</div>
+                <div class="panel-body">
+                    <ul class="event-list">
+                        <li class="event-item" th:each="e : ${recentEvents}">
+                            <!-- explicit photo wins; else the player's skin face; else a type icon -->
+                            <img th:if="${e.imageUrl != null and !e.imageUrl.isEmpty()}"
+                                 class="event-photo" th:src="${e.imageUrl}" alt="" loading="lazy"/>
+                            <img th:if="${(e.imageUrl == null or e.imageUrl.isEmpty()) and e.player != null}"
+                                 class="event-photo" th:src="${skinService.face(e.player, 36)}" alt="" loading="lazy"
+                                 onerror="this.style.visibility='hidden'"/>
+                            <div th:if="${(e.imageUrl == null or e.imageUrl.isEmpty()) and e.player == null}"
+                                 th:class="'event-icon ' + ${
+                                e.type.name() == 'PVP_KILL' ? 'pvp' :
+                                e.type.name() == 'BOSS_KILL' ? 'boss' :
+                                e.type.name() == 'ACHIEVEMENT' ? 'achievement' :
+                                e.type.name() == 'SERVER_MILESTONE' ? 'milestone' :
+                                e.type.name() == 'PLAYER_DEATH' ? 'death' : 'custom'}">
+                                <span th:text="${
+                                    e.type.name() == 'PVP_KILL' ? '⚔' :
+                                    e.type.name() == 'BOSS_KILL' ? '🐉' :
+                                    e.type.name() == 'ACHIEVEMENT' ? '★' :
+                                    e.type.name() == 'SERVER_MILESTONE' ? '⚑' :
+                                    e.type.name() == 'CHAT' ? '💬' :
+                                    e.type.name() == 'PLAYER_DEATH' ? '☠' : '•'}">•</span>
+                            </div>
+                            <div class="event-content">
+                                <div class="event-desc" th:text="${e.description}">Event description</div>
+                                <div class="event-time" th:text="${e.occurredAt.atZone(T(java.time.ZoneId).systemDefault()).toLocalDateTime().toString().replace('T', ' ').substring(0, 16)}">2026-01-01 12:00</div>
+                            </div>
+                        </li>
+                    </ul>
+                    <div class="empty-state" th:if="${#lists.isEmpty(recentEvents)}">No events yet.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Server-wide item/block activity with pie charts -->
+        <h2 class="page-title" style="margin-top:32px;">Server Activity</h2>
+        <div class="stats-3col">
+            <div class="panel">
+                <div class="panel-header">Most Crafted Items</div>
+                <div class="panel-body stat-pie-panel">
+                    <canvas class="stat-pie" id="pieCrafted" width="150" height="150"></canvas>
+                    <ul class="breakdown-list" style="flex:1;">
+                        <li class="breakdown-item" th:each="s : ${topItemsCrafted}">
+                            <span class="breakdown-name">
+                                <img class="mc-icon" th:src="${s.iconUrl}" alt="" loading="lazy" onerror="this.remove()"/>
+                                <span th:text="${s.name}">Item</span>
+                            </span>
+                            <span class="breakdown-value" th:text="${#numbers.formatInteger(s.count, 1, 'COMMA')}">0</span>
+                        </li>
+                    </ul>
+                    <div class="empty-state" th:if="${#lists.isEmpty(topItemsCrafted)}">No data yet.</div>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="panel-header">Most Mined Blocks</div>
+                <div class="panel-body stat-pie-panel">
+                    <canvas class="stat-pie" id="pieMined" width="150" height="150"></canvas>
+                    <ul class="breakdown-list" style="flex:1;">
+                        <li class="breakdown-item" th:each="s : ${topBlocksMined}">
+                            <span class="breakdown-name">
+                                <img class="mc-icon" th:src="${s.iconUrl}" alt="" loading="lazy" onerror="this.remove()"/>
+                                <span th:text="${s.name}">Block</span>
+                            </span>
+                            <span class="breakdown-value" th:text="${#numbers.formatInteger(s.count, 1, 'COMMA')}">0</span>
+                        </li>
+                    </ul>
+                    <div class="empty-state" th:if="${#lists.isEmpty(topBlocksMined)}">No data yet.</div>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="panel-header">Most Placed Blocks</div>
+                <div class="panel-body stat-pie-panel">
+                    <canvas class="stat-pie" id="piePlaced" width="150" height="150"></canvas>
+                    <ul class="breakdown-list" style="flex:1;">
+                        <li class="breakdown-item" th:each="s : ${topBlocksPlaced}">
+                            <span class="breakdown-name">
+                                <img class="mc-icon" th:src="${s.iconUrl}" alt="" loading="lazy" onerror="this.remove()"/>
+                                <span th:text="${s.name}">Block</span>
+                            </span>
+                            <span class="breakdown-value" th:text="${#numbers.formatInteger(s.count, 1, 'COMMA')}">0</span>
+                        </li>
+                    </ul>
+                    <div class="empty-state" th:if="${#lists.isEmpty(topBlocksPlaced)}">No data yet.</div>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="panel-header">Most Killed Mobs</div>
+                <div class="panel-body stat-pie-panel">
+                    <canvas class="stat-pie" id="pieMobs" width="150" height="150"></canvas>
+                    <ul class="breakdown-list" style="flex:1;">
+                        <li class="breakdown-item" th:each="s : ${topMobsKilled}">
+                            <span class="breakdown-name">
+                                <img class="mc-icon" th:src="${s.iconUrl}" alt="" loading="lazy" onerror="this.remove()"/>
+                                <span th:text="${s.name}">Mob</span>
+                            </span>
+                            <span class="breakdown-value" th:text="${#numbers.formatInteger(s.count, 1, 'COMMA')}">0</span>
+                        </li>
+                    </ul>
+                    <div class="empty-state" th:if="${#lists.isEmpty(topMobsKilled)}">No data yet.</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const crafted = /*[[${topItemsCrafted}]]*/ [];
+        const mined   = /*[[${topBlocksMined}]]*/ [];
+        const placed  = /*[[${topBlocksPlaced}]]*/ [];
+        const mobs    = /*[[${topMobsKilled}]]*/ [];
+
+        function drawPie(id, rows) {
+            const el = document.getElementById(id);
+            if (!el || !rows || rows.length === 0 || typeof Chart === 'undefined') return;
+            new Chart(el, {
+                type: 'doughnut',
+                data: {
+                    labels: rows.map(r => r.name),
+                    datasets: [{
+                        data: rows.map(r => r.count),
+                        backgroundColor: rows.map(r => r.color || '#888'),
+                        borderColor: '#1a1a1a', borderWidth: 1
+                    }]
+                },
+                options: { responsive: false, cutout: '55%',
+                    plugins: { legend: { display: false },
+                        tooltip: { callbacks: { label: c => c.label + ': ' + c.raw } } } }
+            });
+        }
+        drawPie('pieCrafted', crafted);
+        drawPie('pieMined', mined);
+        drawPie('piePlaced', placed);
+        drawPie('pieMobs', mobs);
+        /*]]>*/
+    </script>
+</body>
+</html>

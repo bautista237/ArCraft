@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store — Admin — ArCraft</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<header th:replace="~{fragments/layout :: navbar('admin')}"></header>
+
+<main class="page-content">
+    <h1 class="page-title">Store Management</h1>
+
+    <div th:if="${error}" class="alert alert-error"
+         style="padding:12px 20px;border-radius:8px;font-size:0.85rem;margin-bottom:20px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#f87171;"
+         th:text="${error}"></div>
+    <div th:if="${success}" class="alert alert-success"
+         style="padding:12px 20px;border-radius:8px;font-size:0.85rem;margin-bottom:20px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#34d399;"
+         th:text="${success}"></div>
+
+    <!-- New item form -->
+    <div class="panel" style="margin-bottom: 32px;">
+        <div class="panel-header">Add Store Item</div>
+        <div class="panel-body" style="padding: 20px;">
+            <form th:action="@{/admin/store}" method="post" class="admin-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    <div class="form-group" style="flex:2;">
+                        <label for="description">Description</label>
+                        <input type="text" id="description" name="description" placeholder="What it is / unlocks">
+                    </div>
+                    <div class="form-group">
+                        <label for="price">Price (coins)</label>
+                        <input type="number" id="price" name="price" min="0" value="100" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select id="category" name="category" required>
+                            <option th:each="c : ${categories}" th:value="${c}" th:text="${c}"></option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="effect">Cosmetic effect</label>
+                        <select id="effect" name="effect">
+                            <option value="">— none (title) —</option>
+                            <option value="TRAIL_SPARKLE">Trail · Sparkle</option>
+                            <option value="TRAIL_FLAME">Trail · Flame</option>
+                            <option value="TRAIL_SOUL">Trail · Soul fire</option>
+                            <option value="TRAIL_HEART">Trail · Hearts</option>
+                            <option value="TRAIL_ENCHANT">Trail · Enchant glyphs</option>
+                            <option value="TRAIL_STARLIGHT">Trail · Starlight</option>
+                            <option value="TRAIL_PORTAL">Trail · Portal</option>
+                            <option value="TRAIL_SNOW">Trail · Snowflakes</option>
+                            <option value="TRAIL_NOTE">Trail · Music notes</option>
+                            <option value="TRAIL_CHERRY">Trail · Cherry petals</option>
+                            <option value="TRAIL_TOTEM">Trail · Totem</option>
+                            <option value="TRAIL_SMOKE">Trail · Smoke</option>
+                            <option value="TRAIL_CRIT">Trail · Critical stars</option>
+                            <option value="GLOW">Glow aura</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn-primary">Add Item</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Items table -->
+    <div class="panel">
+        <div class="panel-header">Store Items</div>
+        <div class="panel-body">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Description</th>
+                        <th class="text-right">Price</th>
+                        <th class="text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="item : ${items}">
+                        <td th:text="${item.name}">Item</td>
+                        <td><span class="store-cat" th:classappend="${item.category.name().toLowerCase()}" th:text="${item.category}">CAT</span></td>
+                        <td class="text-muted" th:text="${item.description}">desc</td>
+                        <td class="num text-right" th:text="${#numbers.formatInteger(item.price, 1, 'COMMA')}">0</td>
+                        <td class="text-right">
+                            <form th:action="@{/admin/store/{id}/delete(id=${item.id})}" method="post" style="display:inline;"
+                                  onsubmit="return confirm('Delete this item? Player purchases of it will also be removed.');">
+                                <button type="submit" class="btn-small btn-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(items)}">
+                        <td colspan="5" class="empty-state">No store items yet.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>

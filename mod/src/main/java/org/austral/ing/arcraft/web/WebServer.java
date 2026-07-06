@@ -39,6 +39,15 @@ public final class WebServer {
                 cfg.showJavalinBanner = false;
                 cfg.useVirtualThreads = true;
                 cfg.staticFiles.add("/web/static");
+                // SameSite=Lax session cookie = the browser won't attach it to cross-site
+                // POSTs, which (with the Origin check in Auth) covers CSRF.
+                cfg.jetty.modifyServletContextHandler(handler -> {
+                    var sessions = handler.getSessionHandler();
+                    if (sessions != null) {
+                        sessions.setHttpOnly(true);
+                        sessions.setSameSite(org.eclipse.jetty.http.HttpCookie.SameSite.LAX);
+                    }
+                });
             });
             WebRoutes.register(app);
             app.start(host, port);

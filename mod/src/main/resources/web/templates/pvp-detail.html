@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>PvP Encounter — ArCraft</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <style>
+        .fight-header { display:flex; align-items:center; justify-content:center; gap:24px; margin:8px 0 24px; flex-wrap:wrap; }
+        .fighter { display:flex; flex-direction:column; align-items:center; gap:6px; }
+        .fighter img { width:56px; height:56px; border-radius:10px; border:2px solid #2a2a2a; image-rendering:pixelated; background:#1a1a1a; }
+        .fighter.winner img { border-color:#10b981; }
+        .fighter.loser img { border-color:#ef4444; opacity:0.8; }
+        .fighter .name { font-weight:700; color:#e5e5e5; }
+        .fighter .role { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; }
+        .fighter.winner .role { color:#34d399; }
+        .fighter.loser .role { color:#f87171; }
+        .vs { font-family:'JetBrains Mono',monospace; font-size:1.4rem; color:#737373; }
+
+        .hit-row { display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid #1f1f1f; flex-wrap:wrap; }
+        .hit-row:last-child { border-bottom:none; }
+        .hit-num { font-family:'JetBrains Mono',monospace; color:#525252; font-size:0.8rem; width:28px; flex-shrink:0; }
+        .hit-party { display:inline-flex; align-items:center; gap:6px; }
+        .hit-party img { width:22px; height:22px; border-radius:4px; image-rendering:pixelated; }
+        .hit-arrow { color:#737373; }
+        .hit-hearts { display:inline-flex; align-items:center; gap:1px; margin-left:auto; }
+        .hit-hearts img { width:16px; height:16px; image-rendering:pixelated; }
+        .hit-dmg { font-family:'JetBrains Mono',monospace; color:#f87171; font-size:0.8rem; margin-left:6px; }
+        .hit-weapon { display:inline-flex; align-items:center; gap:5px; font-size:0.8rem; color:#a3a3a3; min-width:150px; }
+        .hit-weapon img { width:18px; height:18px; image-rendering:pixelated; }
+        .hit-time { font-family:'JetBrains Mono',monospace; color:#525252; font-size:0.7rem; }
+        .alert { padding:12px 20px; border-radius:8px; font-size:0.85rem; margin-bottom:20px; }
+        .alert-error { background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); color:#f87171; }
+    </style>
+</head>
+<body>
+    <div th:replace="~{fragments/layout :: navbar('rankings')}"></div>
+
+    <main class="page-content">
+        <div class="alert alert-error" th:if="${error}" th:text="${error}"></div>
+
+        <h2 class="page-title">PvP Encounter</h2>
+
+        <!-- Fighters -->
+        <div class="panel" style="margin-bottom:24px;">
+            <div class="panel-body" style="padding:20px;">
+                <div class="fight-header">
+                    <a class="fighter winner" th:if="${event.killer != null}" th:href="@{/players/{u}(u=${event.killer.username})}">
+                        <img th:src="${skinService.face(event.killer, 56)}" alt="" onerror="this.style.visibility='hidden'"/>
+                        <span class="name" th:text="${event.killer.username}">Killer</span>
+                        <span class="role">Winner</span>
+                    </a>
+                    <span class="vs">⚔</span>
+                    <a class="fighter loser" th:if="${event.victim != null}" th:href="@{/players/{u}(u=${event.victim.username})}">
+                        <img th:src="${skinService.face(event.victim, 56)}" alt="" onerror="this.style.visibility='hidden'"/>
+                        <span class="name" th:text="${event.victim.username}">Victim</span>
+                        <span class="role">Defeated</span>
+                    </a>
+                </div>
+                <div style="text-align:center;color:#737373;font-size:0.8rem;">
+                    <span th:text="${totalHits}">0</span> hits ·
+                    <span th:text="${durationSec}">0</span>s ·
+                    <span th:text="${event.endedAt != null ? event.endedAt.atZone(T(java.time.ZoneId).systemDefault()).toLocalDateTime().toString().replace('T',' ').substring(0,16) : ''}">date</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Combat breakdown -->
+        <div class="panel" style="margin-bottom:24px;" th:if="${!#lists.isEmpty(fighters)}">
+            <div class="panel-header">Combat Breakdown</div>
+            <div class="panel-body">
+                <div style="text-align:center;color:#a3a3a3;font-size:0.85rem;margin-bottom:16px;">
+                    Total damage dealt: <strong class="mono" style="color:#f87171;"
+                        th:text="${T(java.lang.String).format('%.1f', totalDamage)}">0</strong>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Fighter</th>
+                            <th class="text-right">Hits</th>
+                            <th class="text-right">Damage</th>
+                            <th class="text-right">Biggest</th>
+                            <th class="text-right">Avg/hit</th>
+                            <th class="text-right">DPS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="f : ${fighters}">
+                            <td>
+                                <a class="player-link" th:if="${f.player != null}"
+                                   th:href="@{/players/{u}(u=${f.player.username})}" th:text="${f.player.username}">Fighter</a>
+                            </td>
+                            <td class="num text-right" th:text="${f.hits}">0</td>
+                            <td class="num text-right text-red" th:text="${T(java.lang.String).format('%.1f', f.totalDamage)}">0</td>
+                            <td class="num text-right" th:text="${T(java.lang.String).format('%.1f', f.biggestHit)}">0</td>
+                            <td class="num text-right" th:text="${T(java.lang.String).format('%.1f', f.avgHit)}">0</td>
+                            <td class="num text-right" th:text="${T(java.lang.String).format('%.1f', f.dps)}">0</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Weapons used -->
+                <table class="data-table" style="margin-top:16px;" th:if="${!#lists.isEmpty(weaponStats)}">
+                    <thead>
+                        <tr><th>Weapon</th><th class="text-right">Hits</th><th class="text-right">Damage</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="w : ${weaponStats}">
+                            <td>
+                                <span class="hit-weapon">
+                                    <img th:if="${w.hasIcon}" th:src="${w.icon}" alt="" loading="lazy" onerror="this.remove()"/>
+                                    <span th:text="${w.name}">Weapon</span>
+                                </span>
+                            </td>
+                            <td class="num text-right" th:text="${w.hits}">0</td>
+                            <td class="num text-right text-red" th:text="${T(java.lang.String).format('%.1f', w.totalDamage)}">0</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Hit-by-hit -->
+        <div class="panel">
+            <div class="panel-header">Hit History</div>
+            <div class="panel-body">
+                <div class="hit-row" th:each="h, it : ${hits}">
+                    <span class="hit-num" th:text="'#' + ${it.index + 1}">#1</span>
+                    <span class="hit-party" th:if="${h.attacker != null}">
+                        <img th:src="${skinService.face(h.attacker, 22)}" alt="" onerror="this.style.visibility='hidden'"/>
+                        <a class="player-link" th:href="@{/players/{u}(u=${h.attacker.username})}" th:text="${h.attacker.username}">Attacker</a>
+                    </span>
+                    <span class="hit-arrow">→</span>
+                    <span class="hit-party" th:if="${h.victim != null}">
+                        <img th:src="${skinService.face(h.victim, 22)}" alt="" onerror="this.style.visibility='hidden'"/>
+                        <span th:text="${h.victim.username}">Victim</span>
+                    </span>
+                    <span class="hit-weapon">
+                        <img th:if="${h.hasWeaponIcon}" th:src="${h.weaponIcon}" alt="" loading="lazy" onerror="this.remove()"/>
+                        <span th:text="${h.weaponName}">Weapon</span>
+                    </span>
+                    <span class="hit-hearts">
+                        <img th:each="n : ${#numbers.sequence(1, h.fullHearts)}" th:if="${h.fullHearts > 0}"
+                             src="https://cdn.jsdelivr.net/gh/InventivetalentDev/minecraft-assets@1.21.1/assets/minecraft/textures/gui/sprites/hud/heart/full.png" alt="♥"/>
+                        <img th:if="${h.halfHeart}"
+                             src="https://cdn.jsdelivr.net/gh/InventivetalentDev/minecraft-assets@1.21.1/assets/minecraft/textures/gui/sprites/hud/heart/half.png" alt="♥"/>
+                        <span class="hit-dmg" th:text="${T(java.lang.String).format('%.1f', h.damage)}">0.0</span>
+                    </span>
+                    <span class="hit-time" th:text="${h.time}">00:00:00</span>
+                </div>
+                <div class="empty-state" th:if="${#lists.isEmpty(hits)}">No individual hits were recorded for this encounter.</div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

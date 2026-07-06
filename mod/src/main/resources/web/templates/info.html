@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>About ArCraft</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <style>
+        .info-section { margin-bottom: 26px; }
+        .info-section h3 { font-size: 1.05rem; color: #f5f5f5; margin-bottom: 10px; }
+        .info-section p, .info-section li { font-size: 0.88rem; color: #c8c8c8; line-height: 1.6; }
+        .info-section ul { margin: 8px 0 0 20px; }
+        .info-section code {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.82rem;
+            background: #111; border: 1px solid #2a2a2a; border-radius: 4px; padding: 1px 6px; color: #34d399;
+        }
+        .info-lead { font-size: 0.95rem; color: #d4d4d4; }
+        .pill { display:inline-block; padding:1px 8px; border-radius:4px; font-size:0.72rem; font-weight:600; }
+        .pill.green{ background:rgba(16,185,129,.15); color:#34d399; }
+        .pill.aqua{ background:rgba(6,182,212,.15); color:#22d3ee; }
+        .pill.orange{ background:rgba(249,115,22,.15); color:#fb923c; }
+        .pill.purple{ background:rgba(168,85,247,.15); color:#c084fc; }
+        .pill.gray{ background:rgba(163,163,163,.15); color:#a3a3a3; }
+    </style>
+</head>
+<body>
+    <div th:replace="~{fragments/layout :: navbar('info')}"></div>
+
+    <main class="page-content">
+        <h2 class="page-title">ⓘ About ArCraft</h2>
+
+        <div class="panel">
+            <div class="panel-body" style="padding: 24px 28px;">
+
+                <div class="info-section">
+                    <p class="info-lead">ArCraft is a NeoForge 1.21.1 mod + web dashboard that records everything that
+                        happens on the server and turns it into live stats, leaderboards, achievements, a coin economy,
+                        a cosmetics store, clans with chat, and an explorable map — all from a single drag-and-drop jar.</p>
+                </div>
+
+                <div class="info-section">
+                    <h3>What the mod tracks</h3>
+                    <p>While you play, the mod records: PvP kills &amp; deaths (total and PvP-only), damage dealt/taken,
+                        mobs killed, blocks mined &amp; placed, items crafted, arrows fired/hit, distance walked/swum/flown/sailed,
+                        and the chunks you explore (used to draw the map &amp; heatmaps). Everything shows up on the
+                        <a th:href="@{/dashboard}">Dashboard</a>, <a th:href="@{/rankings}">Rankings</a>,
+                        your <a th:href="@{/players/{u}(u=${navUsername})}">profile</a>, and the
+                        <a th:href="@{/map}">Map</a>.</p>
+                </div>
+
+                <div class="info-section">
+                    <h3>Recent Activity feed — what gets logged</h3>
+                    <ul>
+                        <li><span class="pill green">ACHIEVEMENT</span> Stat milestones — crossing 10 / 50 / 100 / 250 / 500 / 1,000 … on PvP kills, mobs killed, blocks mined, blocks placed and items crafted</li>
+                        <li><span class="pill orange">BOSS</span> First kill of the Ender Dragon, Wither, Warden or Elder Guardian</li>
+                        <li><span class="pill green">ACHIEVEMENT</span> First diamonds mined, first craft of a notable item, first time entering the Nether or the End</li>
+                        <li><span class="pill orange">PVP_KILL</span> Player-vs-player kills (with the weapon used)</li>
+                        <li><span class="pill purple">PLAYER_DEATH</span> Deaths from any cause (with the vanilla death message)</li>
+                        <li><span class="pill aqua">CHAT</span> Public in-game chat messages</li>
+                        <li><span class="pill gray">CUSTOM</span> Events an admin logs manually (optionally with a photo)</li>
+                    </ul>
+                    <p style="margin-top:8px;">Each entry shows the player's Minecraft skin face.</p>
+                </div>
+
+                <div class="info-section">
+                    <h3>How you earn coins 🪙</h3>
+                    <ul>
+                        <li>First Ender Dragon kill <b>+100</b>, Warden <b>+75</b>, Wither <b>+50</b>, Elder Guardian <b>+30</b></li>
+                        <li>Each diamond ore you mine <b>+10</b></li>
+                        <li>First craft of a notable item (bow, diamond/netherite gear, beacon, enchanting table…) <b>+25</b></li>
+                        <li>First time entering the Nether or the End <b>+20</b></li>
+                        <li>Stat milestones <b>+5 … +1000</b> (scaled by the milestone)</li>
+                        <li>Admins can grant coins directly</li>
+                    </ul>
+                    <p style="margin-top:8px;">Spend coins in the <a th:href="@{/store}">Store</a> on titles and cosmetic
+                        particle trails / glow. Cosmetics can be equipped and unequipped at any time.</p>
+                </div>
+
+                <div class="info-section">
+                    <h3>Titles</h3>
+                    <p>Buy titles in the store, or earn a <b>gold rank title</b> automatically by being #1 in a category:
+                        Top Killer, Most Deaths, Explorer (distance), Top Miner, Master Crafter, Top Builder.
+                        Titles appear next to your name on the rankings and your profile.</p>
+                </div>
+
+                <div class="info-section">
+                    <h3>Clans &amp; clan chat</h3>
+                    <p>Clans group players and show combined stats. Clan members get a private chat that is synced between
+                        the website and the game:</p>
+                    <ul>
+                        <li><code>/clan &lt;message&gt;</code> or <code>/c &lt;message&gt;</code> — send a message to your clan (spaces allowed)</li>
+                        <li><code>/clan coords</code> — share your current coordinates with the clan</li>
+                    </ul>
+                    <p style="margin-top:8px;">Messages sent in-game appear on the clan page (and vice-versa) within a second or two.</p>
+                </div>
+
+                <div class="info-section">
+                    <h3>The Map</h3>
+                    <p>The <a th:href="@{/map}">Map</a> shows the terrain you've explored, shaded like a Minecraft map,
+                        with toggleable heat layers for mining, building and time spent per chunk.</p>
+                </div>
+
+                <div class="info-section">
+                    <h3>In-game account commands</h3>
+                    <ul>
+                        <li><code>/login &lt;password&gt;</code> — set your web dashboard password</li>
+                        <li><code>/retrieve</code> — privately shows your current password</li>
+                        <li><code>/email &lt;address&gt;</code> — register an email (a verification code is emailed to you)</li>
+                        <li><code>/email verify &lt;code&gt;</code> — confirm your email to receive event reminders</li>
+                    </ul>
+                    <p style="margin-top:8px;">Cracked (offline) servers show skins by username; premium servers show the
+                        official skin. Store cosmetics apply to the in-game player who owns them, so log into the web as
+                        your own Minecraft username.</p>
+                </div>
+
+            </div>
+        </div>
+    </main>
+</body>
+</html>

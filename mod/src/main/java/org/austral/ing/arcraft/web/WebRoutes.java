@@ -14,5 +14,9 @@ final class WebRoutes {
 
     static void register(Javalin app) {
         app.get("/health", ctx -> ctx.result("ok"));
+        Auth.register(app);
+        org.austral.ing.arcraft.web.routes.PageRoutes.register(app);
+        org.austral.ing.arcraft.web.routes.ClanRoutes.register(app);
+        org.austral.ing.arcraft.web.routes.PvPRoutes.register(app);
     }
 }
