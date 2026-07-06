@@ -6,6 +6,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
@@ -20,6 +21,9 @@ public class ArcraftMod {
     public static volatile MinecraftServer SERVER;
 
     public ArcraftMod(IEventBus modEventBus, ModContainer modContainer) {
+        // Materialises config/arcraft-common.toml (created on first launch) and backs the
+        // in-game Config screen registered by ArcraftClient.
+        modContainer.registerConfig(ModConfig.Type.COMMON, ArcraftConfig.SPEC);
         NeoForge.EVENT_BUS.register(this);
     }
 

@@ -1,15 +1,33 @@
 modLoader="javafml"
 loaderVersion="${loader_version_range}"
 license="${mod_license}"
+issueTrackerURL="https://github.com/bautista237/ArCraft/issues"
 
 [[mods]]
 modId="${mod_id}"
 version="${mod_version}"
 displayName="${mod_name}"
 authors="${mod_authors}"
+credits="Universidad Austral — Laboratorio I"
+displayURL="https://github.com/bautista237/ArCraft"
+logoFile="arcraft_logo.png"
 description='''
-ArCraft — server instrumentation mod that records player activity to a shared
-H2 database used by the ArCraft web dashboard.
+ArCraft — your server's stats, live on the web.
+
+Drop this jar into mods/ and start the server: ArCraft records everything that
+happens (joins, PvP fights, blocks, mobs, items, chunk exploration, clans) and
+serves a full web dashboard from inside the server process — rankings, player
+profiles, PvP combat breakdowns, clan pages, a live map, a coin store and more.
+
+HOW TO USE
+ - Dashboard: http://<server-ip>:8080 (created automatically, no setup needed).
+ - Players link their account in-game with /email set <address> + /email verify <code>.
+ - Settings live in config/arcraft-common.toml (or Mods -> ArCraft -> Config).
+ - Optional integrations (hidden until you add credentials in the config):
+   email notifications (SMTP), MercadoPago coin purchases, Gemini AI assistant.
+
+Data is stored in the arcraft/ folder using an embedded database; large servers
+can switch to PostgreSQL / MySQL / MariaDB in the config.
 '''
 
 [[dependencies.${mod_id}]]

@@ -42,9 +42,8 @@ runs {
     configureEach {
         systemProperty 'forge.logging.markers', 'REGISTRIES'
         systemProperty 'forge.logging.console.level', 'debug'
-        // Local dev: point the mod at the same shared H2 file the web backend uses,
-        // so players/stats created in-game show up on the dashboard and login works.
-        systemProperty 'arcraft.db.url', 'jdbc:h2:file:/Users/juanbautistatassello/ArCraft/arcraft-data;AUTO_SERVER=TRUE'
+        // Local dev: relative H2 file inside the run dir (same layout as production).
+        systemProperty 'arcraft.db.url', 'jdbc:h2:file:./arcraft-data;AUTO_SERVER=TRUE'
         workingDirectory project.layout.projectDirectory.dir('run').dir(name)
         modSource project.sourceSets.main
     }
@@ -71,6 +70,49 @@ configurations {
     runtimeClasspath.extendsFrom localRuntime
 }
 
+// Full flattened dependency tree of the in-process web stack (Javalin/Jetty, Thymeleaf,
+// Jackson, HikariCP, jdbi, Angus Mail). slf4j-api is NOT listed: Minecraft's boot layer
+// already provides it and bundling a second copy breaks module resolution.
+def webStack = [
+        // Javalin + embedded Jetty 11
+        'io.javalin:javalin:6.7.0',
+        'org.jetbrains.kotlin:kotlin-stdlib:2.2.0',
+        'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.25',
+        'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.25',
+        'org.eclipse.jetty:jetty-server:11.0.25',
+        'org.eclipse.jetty:jetty-http:11.0.25',
+        'org.eclipse.jetty:jetty-io:11.0.25',
+        'org.eclipse.jetty:jetty-util:11.0.25',
+        'org.eclipse.jetty:jetty-security:11.0.25',
+        'org.eclipse.jetty:jetty-servlet:11.0.25',
+        'org.eclipse.jetty:jetty-xml:11.0.25',
+        'org.eclipse.jetty:jetty-webapp:11.0.25',
+        'org.eclipse.jetty.toolchain:jetty-jakarta-servlet-api:5.0.2',
+        'org.eclipse.jetty.websocket:websocket-jetty-server:11.0.25',
+        'org.eclipse.jetty.websocket:websocket-jetty-api:11.0.25',
+        'org.eclipse.jetty.websocket:websocket-jetty-common:11.0.25',
+        'org.eclipse.jetty.websocket:websocket-core-server:11.0.25',
+        'org.eclipse.jetty.websocket:websocket-core-common:11.0.25',
+        'org.eclipse.jetty.websocket:websocket-servlet:11.0.25',
+        // Templates
+        'org.thymeleaf:thymeleaf:3.1.3.RELEASE',
+        'org.attoparser:attoparser:2.0.7.RELEASE',
+        'org.unbescape:unbescape:1.1.6.RELEASE',
+        // JSON
+        'com.fasterxml.jackson.core:jackson-databind:2.18.2',
+        'com.fasterxml.jackson.core:jackson-core:2.18.2',
+        'com.fasterxml.jackson.core:jackson-annotations:2.18.2',
+        // Database access
+        'com.zaxxer:HikariCP:5.1.0',
+        'org.jdbi:jdbi3-core:3.45.4',
+        'io.leangen.geantyref:geantyref:1.3.16',
+        // Mail (HTML mails over SMTP; replaces spring-mail)
+        'org.eclipse.angus:angus-mail:2.0.3',
+        'jakarta.mail:jakarta.mail-api:2.1.3',
+        'jakarta.activation:jakarta.activation-api:2.1.3',
+        'org.eclipse.angus:angus-activation:2.0.2',
+]
+
 dependencies {
     implementation "net.neoforged:neoforge:${neo_version}"
 
@@ -87,6 +129,16 @@ dependencies {
     }
     implementation("org.mindrot:jbcrypt:0.4")
     jarJar("org.mindrot:jbcrypt:0.4")
+
+    // ── In-process web stack (single-jar rewrite) ─────────────────────────
+    // Javalin (embedded Jetty) + Thymeleaf + Jackson + HikariCP + jdbi + Angus Mail.
+    // Each artifact is declared BOTH as implementation (compile/dev classpath) and
+    // jarJar (bundled in the production jar). Jar-in-Jar does NOT bundle transitives,
+    // so the full flattened tree is enumerated in `webStack` below.
+    webStack.each { gav ->
+        implementation(gav)
+        jarJar(gav)
+    }
 }
 
 tasks.withType(ProcessResources).configureEach {
