@@ -112,7 +112,7 @@
                             </div>
                             <div class="event-content">
                                 <div class="event-desc" th:text="${e.description}">Event description</div>
-                                <div class="event-time" th:text="${e.occurredAt.atZone(T(java.time.ZoneId).systemDefault()).toLocalDateTime().toString().replace('T', ' ').substring(0, 16)}">2026-01-01 12:00</div>
+                                <div class="event-time" th:text="${e.occurredAt.atZone(@java.time.ZoneId@systemDefault()).toLocalDateTime().toString().replace('T', ' ').substring(0, 16)}">2026-01-01 12:00</div>
                             </div>
                         </li>
                     </ul>

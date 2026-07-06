@@ -27,7 +27,7 @@
                     <span th:if="${player.clan != null}" class="text-green" th:text="'[' + ${player.clan.tag} + '] ' + ${player.clan.name}">Clan</span>
                     <span th:if="${player.clan == null}" class="text-muted">No clan</span>
                     <span class="text-muted"> · Joined </span>
-                    <span class="text-muted mono" th:text="${player.createdAt.atZone(T(java.time.ZoneId).systemDefault()).toLocalDate().toString()}">2026-01-01</span>
+                    <span class="text-muted mono" th:text="${player.createdAt.atZone(@java.time.ZoneId@systemDefault()).toLocalDate().toString()}">2026-01-01</span>
                     <span class="text-muted"> · </span>
                     <a class="btn-small" th:href="@{/map/player/{u}(u=${player.username})}">View Map</a>
                 </div>
@@ -78,19 +78,19 @@
             </div>
             <div class="stat-card">
                 <div class="label">Damage Dealt (total)</div>
-                <div class="value mono" th:text="${T(java.lang.String).format('%.0f', stats.damageDealt)}">0</div>
+                <div class="value mono" th:text="${@java.lang.String@format('%.0f', stats.damageDealt)}">0</div>
             </div>
             <div class="stat-card">
                 <div class="label">PvP Damage Dealt</div>
-                <div class="value green mono" th:text="${T(java.lang.String).format('%.0f', stats.pvpDamageDealt)}">0</div>
+                <div class="value green mono" th:text="${@java.lang.String@format('%.0f', stats.pvpDamageDealt)}">0</div>
             </div>
             <div class="stat-card">
                 <div class="label">Damage Received (total)</div>
-                <div class="value mono" th:text="${T(java.lang.String).format('%.0f', stats.damageReceived)}">0</div>
+                <div class="value mono" th:text="${@java.lang.String@format('%.0f', stats.damageReceived)}">0</div>
             </div>
             <div class="stat-card">
                 <div class="label">PvP Damage Received</div>
-                <div class="value mono" th:text="${T(java.lang.String).format('%.0f', stats.pvpDamageReceived)}">0</div>
+                <div class="value mono" th:text="${@java.lang.String@format('%.0f', stats.pvpDamageReceived)}">0</div>
             </div>
             <div class="stat-card">
                 <div class="label">Longest Shot</div>
@@ -210,7 +210,7 @@
                     </div>
                     <div class="stat-card">
                         <div class="label">Win Rate</div>
-                        <div class="value aqua mono" th:text="${T(java.lang.String).format('%.0f%%', pvp.winRate)}">0%</div>
+                        <div class="value aqua mono" th:text="${@java.lang.String@format('%.0f%%', pvp.winRate)}">0%</div>
                     </div>
                 </div>
                 <div class="stats-row" style="margin-bottom:6px;">
@@ -254,7 +254,7 @@
                             <td class="num text-right text-green" th:text="${m.killsAgainst}">0</td>
                             <td class="num text-right text-red" th:text="${m.deathsTo}">0</td>
                             <td class="num text-right" th:text="${m.total}">0</td>
-                            <td class="num text-right" th:text="${T(java.lang.String).format('%.0f%%', m.winRate)}">0%</td>
+                            <td class="num text-right" th:text="${@java.lang.String@format('%.0f%%', m.winRate)}">0%</td>
                         </tr>
                     </tbody>
                 </table>
@@ -290,7 +290,7 @@
                                    th:href="@{/players/{u}(u=${pvp.killer.username})}"
                                    th:text="${pvp.killer.username}">opponent</a>
                             </td>
-                            <td class="num text-right" th:text="${pvp.endedAt.atZone(T(java.time.ZoneId).systemDefault()).toLocalDateTime().toString().replace('T', ' ').substring(0, 16)}">2026-01-01 12:00</td>
+                            <td class="num text-right" th:text="${pvp.endedAt.atZone(@java.time.ZoneId@systemDefault()).toLocalDateTime().toString().replace('T', ' ').substring(0, 16)}">2026-01-01 12:00</td>
                             <td class="text-right">
                                 <a class="btn-small" th:href="@{/pvp/{id}(id=${pvp.id})}">View hits →</a>
                             </td>

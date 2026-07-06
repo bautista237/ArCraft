@@ -62,13 +62,13 @@
                             </td>
                             <td class="num text-right" th:text="${s.kills}">0</td>
                             <td class="num text-right" th:text="${s.deaths}">0</td>
-                            <td class="num text-right" th:text="${s.deaths == 0 ? s.kills : T(java.lang.String).format('%.2f', s.kills * 1.0 / s.deaths)}">0.00</td>
+                            <td class="num text-right" th:text="${s.deaths == 0 ? s.kills : @java.lang.String@format('%.2f', s.kills * 1.0 / s.deaths)}">0.00</td>
                             <td class="num text-right" th:text="${#numbers.formatInteger(s.blocksMined, 1, 'COMMA')}">0</td>
                             <td class="num text-right" th:text="${#numbers.formatInteger(s.blocksPlaced, 1, 'COMMA')}">0</td>
                             <td class="num text-right" th:text="${#numbers.formatInteger(s.mobsKilled, 1, 'COMMA')}">0</td>
                             <td class="num text-right" th:text="${#numbers.formatInteger(s.itemsCrafted, 1, 'COMMA')}">0</td>
                             <td class="num text-right" th:text="${#numbers.formatInteger(s.distanceWalked + s.distanceSwum + s.distanceFlown + s.distanceSailed, 1, 'COMMA')}">0</td>
-                            <td class="num text-right" th:text="${s.shotsFired == 0 ? '0%' : T(java.lang.String).format('%.1f%%', s.shotsHit * 100.0 / s.shotsFired)}">0%</td>
+                            <td class="num text-right" th:text="${s.shotsFired == 0 ? '0%' : @java.lang.String@format('%.1f%%', s.shotsHit * 100.0 / s.shotsFired)}">0%</td>
                         </tr>
                     </tbody>
                 </table>

@@ -79,6 +79,13 @@ final class LegacyImport {
         }
 
         if (imported > 0) {
+            // ConfigValue.set() only updates the in-memory config — persist explicitly so the
+            // imported credentials survive after the old application.properties is deleted.
+            try {
+                ArcraftConfig.SPEC.save();
+            } catch (Exception e) {
+                LOGGER.warn("[ArCraft] Could not persist imported config to disk: {}", e.toString());
+            }
             LOGGER.info("[ArCraft] Imported {} credential group(s) from the old application.properties "
                     + "into config/arcraft-common.toml. The old backend files (arcraft-web/, start.sh, "
                     + "stop.sh, application.properties) are no longer used and can be deleted.", imported);

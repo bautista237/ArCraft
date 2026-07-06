@@ -60,7 +60,7 @@
                 <div style="text-align:center;color:#737373;font-size:0.8rem;">
                     <span th:text="${totalHits}">0</span> hits ·
                     <span th:text="${durationSec}">0</span>s ·
-                    <span th:text="${event.endedAt != null ? event.endedAt.atZone(T(java.time.ZoneId).systemDefault()).toLocalDateTime().toString().replace('T',' ').substring(0,16) : ''}">date</span>
+                    <span th:text="${event.endedAt != null ? event.endedAt.atZone(@java.time.ZoneId@systemDefault()).toLocalDateTime().toString().replace('T',' ').substring(0,16) : ''}">date</span>
                 </div>
             </div>
         </div>
@@ -71,7 +71,7 @@
             <div class="panel-body">
                 <div style="text-align:center;color:#a3a3a3;font-size:0.85rem;margin-bottom:16px;">
                     Total damage dealt: <strong class="mono" style="color:#f87171;"
-                        th:text="${T(java.lang.String).format('%.1f', totalDamage)}">0</strong>
+                        th:text="${@java.lang.String@format('%.1f', totalDamage)}">0</strong>
                 </div>
                 <table class="data-table">
                     <thead>
@@ -91,10 +91,10 @@
                                    th:href="@{/players/{u}(u=${f.player.username})}" th:text="${f.player.username}">Fighter</a>
                             </td>
                             <td class="num text-right" th:text="${f.hits}">0</td>
-                            <td class="num text-right text-red" th:text="${T(java.lang.String).format('%.1f', f.totalDamage)}">0</td>
-                            <td class="num text-right" th:text="${T(java.lang.String).format('%.1f', f.biggestHit)}">0</td>
-                            <td class="num text-right" th:text="${T(java.lang.String).format('%.1f', f.avgHit)}">0</td>
-                            <td class="num text-right" th:text="${T(java.lang.String).format('%.1f', f.dps)}">0</td>
+                            <td class="num text-right text-red" th:text="${@java.lang.String@format('%.1f', f.totalDamage)}">0</td>
+                            <td class="num text-right" th:text="${@java.lang.String@format('%.1f', f.biggestHit)}">0</td>
+                            <td class="num text-right" th:text="${@java.lang.String@format('%.1f', f.avgHit)}">0</td>
+                            <td class="num text-right" th:text="${@java.lang.String@format('%.1f', f.dps)}">0</td>
                         </tr>
                     </tbody>
                 </table>
@@ -113,7 +113,7 @@
                                 </span>
                             </td>
                             <td class="num text-right" th:text="${w.hits}">0</td>
-                            <td class="num text-right text-red" th:text="${T(java.lang.String).format('%.1f', w.totalDamage)}">0</td>
+                            <td class="num text-right text-red" th:text="${@java.lang.String@format('%.1f', w.totalDamage)}">0</td>
                         </tr>
                     </tbody>
                 </table>
@@ -144,7 +144,7 @@
                              src="https://cdn.jsdelivr.net/gh/InventivetalentDev/minecraft-assets@1.21.1/assets/minecraft/textures/gui/sprites/hud/heart/full.png" alt="♥"/>
                         <img th:if="${h.halfHeart}"
                              src="https://cdn.jsdelivr.net/gh/InventivetalentDev/minecraft-assets@1.21.1/assets/minecraft/textures/gui/sprites/hud/heart/half.png" alt="♥"/>
-                        <span class="hit-dmg" th:text="${T(java.lang.String).format('%.1f', h.damage)}">0.0</span>
+                        <span class="hit-dmg" th:text="${@java.lang.String@format('%.1f', h.damage)}">0.0</span>
                     </span>
                     <span class="hit-time" th:text="${h.time}">00:00:00</span>
                 </div>

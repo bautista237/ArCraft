@@ -15,8 +15,11 @@ public record SessionUser(UUID id, String username, boolean admin) implements Se
     }
 
     public static void login(Context ctx, SessionUser user) {
-        ctx.req().changeSessionId(); // session-fixation protection
-        ctx.sessionAttribute(ATTR, user);
+        // Fresh session id on login = session-fixation protection (changeSessionId() would
+        // throw "No session" when the visitor arrives without one).
+        var old = ctx.req().getSession(false);
+        if (old != null) old.invalidate();
+        ctx.req().getSession(true).setAttribute(ATTR, user);
     }
 
     public static void logout(Context ctx) {

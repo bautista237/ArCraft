@@ -63,7 +63,7 @@
                     &nbsp;&middot;&nbsp;
                     Friendly Fire: <span th:text="${clan.friendlyFireEnabled ? 'ON' : 'OFF'}">OFF</span>
                     &nbsp;&middot;&nbsp;
-                    Created: <span th:text="${clan.createdAt.atZone(T(java.time.ZoneId).systemDefault()).toLocalDate().toString()}">2025-01-01</span>
+                    Created: <span th:text="${clan.createdAt.atZone(@java.time.ZoneId@systemDefault()).toLocalDate().toString()}">2025-01-01</span>
                 </div>
             </div>
             <div class="clan-actions">
@@ -160,7 +160,7 @@
                 <div th:if="${#lists.isEmpty(messages)}" class="empty-state">No messages yet.</div>
                 <div class="chat-msg" th:each="msg : ${messages}">
                     <span class="chat-sender" th:text="${msg.sender.username}">player</span>
-                    <span class="chat-time" th:text="${msg.sentAt.atZone(T(java.time.ZoneId).systemDefault()).toLocalDateTime().toString().replace('T', ' ').substring(0, 16)}">2025-01-01 12:00</span>
+                    <span class="chat-time" th:text="${msg.sentAt.atZone(@java.time.ZoneId@systemDefault()).toLocalDateTime().toString().replace('T', ' ').substring(0, 16)}">2025-01-01 12:00</span>
                     <div class="chat-text" th:text="${msg.content}">Hello!</div>
                 </div>
             </div>
