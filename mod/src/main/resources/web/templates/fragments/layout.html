@@ -13,9 +13,10 @@
         <a th:href="@{/map}" th:classappend="${activePage == 'map'} ? 'active'">Map</a>
         <a th:href="@{/clans}" th:classappend="${activePage == 'clans'} ? 'active'">Clans</a>
         <a th:href="@{/store}" th:classappend="${activePage == 'store'} ? 'active'">Store</a>
-        <a th:href="@{/assistant}" th:classappend="${activePage == 'assistant'} ? 'active'">Assistant</a>
+        <a th:href="@{/assistant}" th:classappend="${activePage == 'assistant'} ? 'active'"
+           th:if="${geminiEnabled}">Assistant</a>
         <a th:href="@{/admin}" th:classappend="${activePage == 'admin'} ? 'active'"
-          >Admin</a>
+           th:if="${isAdmin}">Admin</a>
     </nav>
     <div class="user-section">
         <a th:href="@{/info}" class="btn-info-circle" title="About ArCraft — what the mod does, logs &amp; coin rewards">i</a>

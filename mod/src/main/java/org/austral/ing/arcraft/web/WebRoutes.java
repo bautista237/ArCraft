@@ -18,5 +18,8 @@ final class WebRoutes {
         org.austral.ing.arcraft.web.routes.PageRoutes.register(app);
         org.austral.ing.arcraft.web.routes.ClanRoutes.register(app);
         org.austral.ing.arcraft.web.routes.PvPRoutes.register(app);
+        org.austral.ing.arcraft.web.routes.StoreRoutes.register(app);
+        org.austral.ing.arcraft.web.routes.MiscRoutes.register(app);
+        org.austral.ing.arcraft.web.routes.AdminRoutes.register(app);
     }
 }

@@ -31,6 +31,7 @@ public final class DatabaseManager {
         if (connection != null) return;
         try {
             Database.open();
+            org.austral.ing.arcraft.db.Seeder.run();
             // One pooled connection reserved for the writer thread (returned on close()).
             connection = Database.pool().getConnection();
             connection.setAutoCommit(true);

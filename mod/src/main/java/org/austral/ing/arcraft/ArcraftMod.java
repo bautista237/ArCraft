@@ -37,6 +37,7 @@ public class ArcraftMod {
         LOGGER.info("[ArCraft] Tracking  : joins, PvP, blocks, mobs, items, arrows, chunks");
         LOGGER.info("[ArCraft] Initializing H2 database connection...");
         SERVER = event.getServer();
+        LegacyImport.run(); // one-time upgrade from the old two-process layout (secrets → TOML)
         DatabaseManager.init();
         final boolean onlineMode = event.getServer().usesAuthentication();
         DatabaseManager.submit(() -> DatabaseManager.recordOnlineMode(onlineMode));

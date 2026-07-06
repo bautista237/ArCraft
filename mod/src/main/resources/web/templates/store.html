@@ -43,8 +43,8 @@
             Earn coins through achievements and in-game work, buy them below, then spend them on titles and cosmetics.
         </p>
 
-        <!-- Buy coins with MercadoPago -->
-        <div class="panel" style="margin-bottom:24px;">
+        <!-- Buy coins with MercadoPago (hidden entirely when no token is configured) -->
+        <div class="panel" style="margin-bottom:24px;" th:if="${mpEnabled}">
             <div class="panel-header">💳 Buy coins</div>
             <div class="panel-body">
                 <p class="text-muted" th:if="${mpEnabled}" style="font-size:0.82rem;margin:0 0 16px;">

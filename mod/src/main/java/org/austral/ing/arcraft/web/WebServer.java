@@ -51,6 +51,7 @@ public final class WebServer {
             });
             WebRoutes.register(app);
             app.start(host, port);
+            org.austral.ing.arcraft.web.service.MailService.INSTANCE.start();
             LOGGER.info("[ArCraft] Web dashboard up on http://{}:{} (public: {})",
                     host.equals("0.0.0.0") ? "localhost" : host, port, ArcraftConfig.baseUrl());
         } catch (Exception e) {
@@ -69,6 +70,7 @@ public final class WebServer {
     }
 
     private static void stopQuietly() {
+        org.austral.ing.arcraft.web.service.MailService.INSTANCE.stop();
         try {
             if (app != null) app.stop();
         } catch (Exception e) {
