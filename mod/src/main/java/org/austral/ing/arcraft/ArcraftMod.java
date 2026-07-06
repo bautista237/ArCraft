@@ -10,6 +10,7 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
+import org.austral.ing.arcraft.web.WebServer;
 import org.slf4j.Logger;
 
 @Mod(ArcraftMod.MODID)
@@ -40,8 +41,8 @@ public class ArcraftMod {
         final boolean onlineMode = event.getServer().usesAuthentication();
         DatabaseManager.submit(() -> DatabaseManager.recordOnlineMode(onlineMode));
         LOGGER.info("[ArCraft] Server online-mode: {}", onlineMode);
-        LOGGER.info("[ArCraft] Launching web dashboard (drag-and-drop mode)...");
-        WebBackendLauncher.start(DatabaseManager.getJdbcUrl());
+        LOGGER.info("[ArCraft] Starting embedded web dashboard...");
+        WebServer.start();
         LOGGER.info("[ArCraft] Ready — all event handlers active");
         LOGGER.info("========================================");
     }
@@ -49,7 +50,7 @@ public class ArcraftMod {
     @SubscribeEvent
     public void onServerStopping(ServerStoppingEvent event) {
         LOGGER.info("[ArCraft] Server stopping — stopping web dashboard, flushing DB writes and closing connection");
-        WebBackendLauncher.stop();
+        WebServer.stop();
         DatabaseManager.close();
         SERVER = null;
         LOGGER.info("[ArCraft] Shutdown complete");
